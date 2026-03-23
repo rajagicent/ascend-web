@@ -1,18 +1,42 @@
-import { Geist, Geist_Mono } from "next/font/google"
-
 import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
+import { Metadata } from "next"
 
-const fontSans = Geist({
-  subsets: ["latin"],
-  variable: "--font-sans",
-})
+// ✅ SEO Metadata
+export const metadata: Metadata = {
+  title: "Ascend Fitness App",
+  description: "Fitness App",
+  keywords: ["nextjs", "react", "seo", "web development"],
+  authors: [{ name: "Agicent" }],
+  creator: "Agicent",
 
-const fontMono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-})
+  openGraph: {
+    title: "Ascend",
+    description: "Your website description",
+    url: "https://yourdomain.com",
+    siteName: "Your Website Name",
+    images: [
+      {
+        url: "https://yourdomain.com/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "OG Image",
+      },
+    ],
+    type: "website",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Your Website Name",
+    description: "Your website description",
+    images: ["https://yourdomain.com/og-image.jpg"],
+  },
+
+  icons: {
+    icon: "/favicon.ico",
+  },
+}
 
 export default function RootLayout({
   children,
@@ -20,14 +44,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={cn("antialiased", fontMono.variable, "font-sans", fontSans.variable)}
-    >
-      <body>
-        <ThemeProvider>{children}</ThemeProvider>
-      </body>
+    <html lang="en" suppressHydrationWarning className={cn("antialiased")}>
+      <body>{children}</body>
     </html>
   )
 }
