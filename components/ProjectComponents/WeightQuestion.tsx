@@ -258,6 +258,12 @@ const WeightQuestion = ({
         )}
       </div>
 
+      
+        <p className="my-2 text-sm font-medium text-[#E9074B]">
+          Please double-check your height
+        </p>
+      
+
       <div className="mt-4 flex items-center justify-center w-full">
         {/* CONTINUE BUTTON */}
         

@@ -156,9 +156,9 @@ export const EmailGate = ({ next }: any) => {
                 value={digit}
                 onChange={(e) => handleOtpChange(e.target.value, index)}
                 onKeyDown={(e) => handleKeyDown(e, index)}
-                className={`h-12 w-12 rounded-lg border-2 text-center text-xl transition-all duration-200 outline-none ${
+                className={`h-13 w-13 rounded-lg border-2 text-center text-xl transition-all duration-200 outline-none ${
                   digit
-                    ? "border-[#E9074B] text-[#E9074B]"
+                    ? "border-[#E9074B] font-semibold text-[#E9074B]"
                     : "border-gray-300 text-black"
                 } focus:border-[#E9074B]`}
               />
