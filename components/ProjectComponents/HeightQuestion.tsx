@@ -5,16 +5,36 @@ import React, { useState } from "react";
 
 export const HeightQuestion = ({
   question,
+  value,
   update,
   next,
 }: any) => {
   const [unit, setUnit] = useState<"Feet" | "Centimeter">("Feet");
-
   const [feetValue, setFeetValue] = useState("");
   const [inchesValue, setInchesValue] = useState("");
   const [cmValue, setCmValue] = useState("");
 
-  // 🔥 Convert everything to CM (single source for backend)
+  // 🔥 Hydrate from value prop
+  React.useEffect(() => {
+    if (value) {
+      const cm = parseInt(value);
+      if (cm > 0) {
+        setCmValue(cm.toString());
+        const totalFeet = cm / 30.48;
+        const ft = Math.floor(totalFeet);
+        const inc = Math.round((totalFeet - ft) * 12);
+        setFeetValue(ft.toString());
+        setInchesValue(inc.toString());
+        setUnit("Centimeter");
+      }
+    }
+  }, [value]);
+
+  const handleToggle = (newUnit: "Feet" | "Centimeter") => {
+    if (newUnit === unit) return;
+    setUnit(newUnit);
+  };
+
   const getFinalHeightInCm = () => {
     if (unit === "Centimeter") {
       return parseInt(cmValue) || 0;
@@ -24,28 +44,6 @@ export const HeightQuestion = ({
       const totalFeet = ft + inc / 12;
       return Math.round(totalFeet * 30.48);
     }
-  };
-
-  const handleToggle = (newUnit: "Feet" | "Centimeter") => {
-    if (newUnit === unit) return;
-
-    if (newUnit === "Centimeter") {
-      const cm = getFinalHeightInCm();
-      setCmValue(cm ? cm.toString() : "");
-    } else {
-      const cm = parseInt(cmValue) || 0;
-
-      if (cm > 0) {
-        const totalFeet = cm / 30.48;
-        const ft = Math.floor(totalFeet);
-        const inc = Math.round((totalFeet - ft) * 12);
-
-        setFeetValue(ft.toString());
-        setInchesValue(inc.toString());
-      }
-    }
-
-    setUnit(newUnit);
   };
 
   const handleContinue = () => {

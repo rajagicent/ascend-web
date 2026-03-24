@@ -4,6 +4,10 @@ import { Button } from "@/components/ui/button"
 import { WeightProjectionChart } from "./WeightProjectionChart"
 import Image from "next/image"
 import TestimonialCard from "./TestimonialCard";
+import { useOnboarding } from "@/hooks/useOnboarding";
+import { submitFinalSurvey } from "@/action/redisApi";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 
 const CalendarIcon = () => (
@@ -84,6 +88,74 @@ const exercises = [
  
 
 const CompleteScreen = () => {
+  const { state, questionsMap } = useOnboarding();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleStartPlan = async () => {
+    setIsSubmitting(true);
+    try {
+      const answersArray = Object.entries(state.answers)
+        .filter(([key]) => key !== "email") // ❌ Don't send email in answers array
+        .map(([key, value]) => {
+        const q = questionsMap[key];
+        
+        let answerText = "";
+        let answerId = "";
+
+        if (q && q.options) {
+          if (Array.isArray(value)) {
+            const labels = q.options
+              .filter(opt => value.includes(opt.value))
+              .map(opt => opt.label);
+            answerText = labels.length > 0 ? labels.join(", ") : value.join(", ");
+            answerId = value.join(", ");
+          } else {
+            const opt = q.options.find(o => o.value === value);
+            answerText = opt ? opt.label : String(value);
+            answerId = String(value);
+          }
+        } else {
+          answerText = typeof value === 'object' ? JSON.stringify(value) : String(value);
+          answerId = typeof value === 'object' ? JSON.stringify(value) : String(value);
+        }
+
+        return {
+          question_id: q ? q.id : (Number(key) || 0),
+          field_id: q ? q.field_id : key,
+          answer_id: answerId,
+          answer: answerText,
+          set_id: q ? q.set_id : 0,
+        };
+      });
+
+      const goalAnswer = state.answers["goal"] || "";
+      let goalText = "";
+      if (questionsMap["goal"] && questionsMap["goal"].options) {
+        const matchingOpt = questionsMap["goal"].options.find(o => o.value === goalAnswer);
+        goalText = matchingOpt ? matchingOpt.label : goalAnswer;
+      }
+
+      const res = await submitFinalSurvey({
+        variation_id: 4,
+        goal: goalText || goalAnswer,
+        answers: answersArray,
+      });
+
+      if (res.success) {
+        localStorage.removeItem("onboarding_data");
+        localStorage.removeItem("onboarding_step");
+        window.location.href = "/";
+      } else {
+        alert(res.error || "Failed to submit survey");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("An unexpected error occurred");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen flex-col justify-center p-4">
       <div className="flex w-full flex-col justify-between">
@@ -286,7 +358,12 @@ const CompleteScreen = () => {
     </div>
 
      {/* CTA */}
-        <Button className="mt-6 w-full max-w-[400px] flex mx-auto justify-center items-center rounded-2xl bg-[#E9074B] py-6 text-lg text-white">
+        <Button 
+          onClick={handleStartPlan}
+          disabled={isSubmitting}
+          className="mt-6 w-full max-w-[400px] flex mx-auto justify-center items-center rounded-2xl bg-[#E9074B] py-6 text-lg text-white"
+        >
+          {isSubmitting && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
           Start My Plan
         </Button>
     </div>

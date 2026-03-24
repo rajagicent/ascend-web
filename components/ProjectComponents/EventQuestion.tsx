@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Calendar } from "@/components/ui/calendar"
 import { HeartHandshake, Palmtree, Sun, Cake, Users, Smile } from "lucide-react"
 
@@ -14,9 +14,20 @@ const iconMap: any = {
   other: Smile,
 }
 
-export const EventQuestion = ({ question, update, next }: any) => {
+export const EventQuestion = ({ question, value, update, next }: any) => {
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null)
   const [selectedDate, setSelectedDate] = useState<Date | undefined>()
+
+  // 🔥 Hydrate from value prop
+  useEffect(() => {
+    if (value && typeof value === "object") {
+      if (value.event) setSelectedEvent(value.event);
+      if (value.date) {
+        const d = new Date(value.date);
+        if (!isNaN(d.getTime())) setSelectedDate(d);
+      }
+    }
+  }, [value]);
 
   const handleContinue = () => {
     update(question.id, {

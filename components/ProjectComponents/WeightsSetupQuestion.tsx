@@ -9,9 +9,9 @@ const heavy = [60, 65, 70, 75, 80, 85, 90, 95, 100]
 
 const plateOptions = [2.5, 5, 10, 25, 35, 45]
 
-export const WeightsSetupQuestion = ({ question, update, next }: any) => {
-  const [selected, setSelected] = useState<number[]>([])
-  const [plates, setPlates] = useState<Record<number, number>>({})
+export const WeightsSetupQuestion = ({ question, value, update, next }: any) => {
+  const [selected, setSelected] = useState<number[]>(value?.dumbbells || [])
+  const [plates, setPlates] = useState<Record<number, number>>(value?.plates || {})
 
   // 🔥 toggle weights
   const toggleWeight = (w: number) => {
