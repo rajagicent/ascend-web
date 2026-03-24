@@ -71,11 +71,11 @@ export default function QuestionRenderer({
 
   return (
     <div className="mx-auto max-w-5xl p-6">
-      <h2 className="text-center text-[#191717] text-2xl font-bold mb-2">
+      <h2 className="text-center text-2xl font-bold text-[#191717]">
         {question.label}
       </h2>
 
-      <p className="text-center mb-10 text-[18px] leading-6.5 text-[#19171799]">
+      <p className="mb-10 text-center text-[18px] leading-6.5 text-[#19171799]">
         {question.subLabel}
       </p>
 

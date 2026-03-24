@@ -11,7 +11,7 @@ export const questions: Question[] = [
       { label: "Lose weight and keep it off", value: "weight_loss" },
       { label: "Build muscle and get stronger", value: "weight_gain" },
       { label: "Get lean and toned", value: "fitness" },
-      { label: "Feel healthier and have more energy", value: "fitness" }
+      { label: "Feel healthier and have more energy", value: "fitnessw" }
 
     ],
     autoNext: true
