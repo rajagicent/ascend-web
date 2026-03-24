@@ -3,8 +3,12 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react"
 
+const lbsToKg = (lbs: number) => lbs / 2.20462;
+const kgToLbs = (kg: number) => kg * 2.20462;
+
 const WeightQuestion = ({
   question,
+  value,
   update,
   next,
   min = 80,
@@ -17,15 +21,27 @@ const WeightQuestion = ({
   const [isDragging, setIsDragging] = useState(false)
   const [hasSelected, setHasSelected] = useState(false)
 
+
+  // 🔥 Hydrate from value prop
+  useEffect(() => {
+    if (value) {
+      const kg = parseFloat(value);
+      if (kg > 0) {
+        const lbs = kgToLbs(kg);
+        setCurrentValue(lbs);
+        setInputValue(kg.toString());
+        setUnit("KG");
+        setHasSelected(true);
+      }
+    }
+  }, [value]);
+
   const dragStartPos = useRef(0)
   const dragStartValue = useRef(0)
 
   const pixelsPerUnit = 120
   const ticksPerUnit = 10
 
-  // ===== CONVERSION =====
-  const lbsToKg = (lbs: number) => lbs / 2.20462
-  const kgToLbs = (kg: number) => kg * 2.20462
 
   const getDisplayValue = () => {
     return unit === "KG" ? lbsToKg(currentValue) : currentValue

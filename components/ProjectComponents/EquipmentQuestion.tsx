@@ -5,64 +5,42 @@ import { useState } from "react"
 import { Checkbox } from "../ui/checkbox"
 import Image from "next/image"
 
-const strength = [
-  {
-    label: "Dumbbells",
-    subLabel: "Strength equipment",
-    img: "/Dumbbells.png",
-  },
-  {
-    label: "Bench",
-    subLabel: "Flat or adjustable bench",
-    img: "/Bench.png",
-  },
-  {
-    label: "Olympic bar and plates",
-    subLabel: "Full barbell setup",
-    img: "/Bar.png",
-  },
-  {
-    label: "Power cage / Squat rack",
-    subLabel: "Strength equipment",
-    img: "/power.png",
-  },
-  {
-    label: "Smith machine",
-    subLabel: "Strength equipment",
-    img: "/smith.png",
-  },
-  {
-    label: "Cable Tower",
-    subLabel: "Strength equipment",
-    img: "/cable.png",
-  },
-  {
-    label: "Kettlebells",
-    subLabel: "Strength equipment",
-    img: "/Kettlebells.png",
-  },
-  {
-    label: "Resistance bands",
-    subLabel: "Strength equipment",
-    img: "/Resistance.png",
-  },
-]
+const imageMap: Record<string, string> = {
+  dumbbells: "/Dumbbells.png",
+  bench: "/Bench.png",
+  olympic_barbell: "/Bar.png",
+  squat_rack: "/power.png",
+  smith_machine: "/smith.png",
+  cable_machine: "/cable.png",
+  kettlebells: "/Kettlebells.png",
+  resistance_bands: "/Resistance.png",
+  treadmill: "/Treadmil.png",
+  stationary_bike: "/StationaryBike.png",
+  rowing_machine: "/Rowing.png",
+  elliptical: "/Elliptical.png",
+  bodyweight: "/bodyweight.png", // Fallback if exists
+}
 
-const cardio = [
-  { label: "Treadmill", img: "/Treadmil.png" },
-  { label: "Stationary Bike", img: "/StationaryBike.png" },
-  { label: "Rowing machine", img: "/Rowing.png" },
-  { label: "Elliptical", img: "/Elliptical.png" },
-]
-export const EquipmentQuestion = ({ question, update, next }: any) => {
-  const [selected, setSelected] = useState<string[]>([])
-  const [noEquipment, setNoEquipment] = useState(false)
+export const EquipmentQuestion = ({ question, value, update, next }: any) => {
+  const options = question.options || []
+  
+  // Bodyweight is EQUIP_013
+  const bodyweightOption = options.find((o: any) => o.value === "EQUIP_013")
+  const strengthOptions = options.filter((o: any) => o.description?.toLowerCase().includes("strength"))
+  const cardioOptions = options.filter((o: any) => o.description?.toLowerCase().includes("cardio"))
 
-  const toggleItem = (item: string) => {
+  const [selected, setSelected] = useState<string[]>(
+    value ? (value.includes("EQUIP_013") ? [] : (Array.isArray(value) ? value : [value])) : []
+  )
+  const [noEquipment, setNoEquipment] = useState(
+    value ? value.includes("EQUIP_013") : false
+  )
+
+  const toggleItem = (val: string) => {
     if (noEquipment) setNoEquipment(false)
 
     setSelected((prev) =>
-      prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item]
+      prev.includes(val) ? prev.filter((i) => i !== val) : [...prev, val]
     )
   }
 
@@ -72,45 +50,42 @@ export const EquipmentQuestion = ({ question, update, next }: any) => {
   }
 
   const handleContinue = () => {
-    const finalData = noEquipment ? ["bodyweight_only"] : selected
-
+    const finalData = noEquipment ? ["EQUIP_013"] : selected
     update(question.id, finalData)
-    console.log("Equipment:", finalData)
-
     next()
   }
 
-  const renderItem = (item: any) => {
-    const active = selected.includes(item.label)
-    const Icon = item.icon
+  const renderItem = (opt: any) => {
+    const active = selected.includes(opt.value)
+    const imgPath = imageMap[opt.image] || "/Dumbbells.png"
 
     return (
       <div
-        key={item.label}
-        onClick={() => toggleItem(item.label)}
+        key={opt.value}
+        onClick={() => toggleItem(opt.value)}
         className={`flex cursor-pointer items-center justify-between rounded-xl p-3 ${active ? "border border-red-500 bg-red-50" : "bg-gray-100"} `}
       >
         <div className="flex items-center gap-3">
           <Image
-            src={item.img}
-            alt={item.label}
+            src={imgPath}
+            alt={opt.label}
             width={40}
             height={40}
             className="rounded-md object-contain"
           />
 
           <div className="flex flex-col">
-            <span className="text-sm font-medium">{item.label}</span>
+            <span className="text-sm font-medium">{opt.label}</span>
 
-            {item.subLabel && (
-              <span className="text-xs text-gray-400">{item.subLabel}</span>
+            {opt.description && (
+              <span className="text-xs text-gray-400">{opt.description}</span>
             )}
           </div>
         </div>
 
         <Checkbox
           checked={active}
-          onCheckedChange={() => toggleItem(item.label)}
+          onCheckedChange={() => toggleItem(opt.value)}
           onClick={(e) => e.stopPropagation()}
           className="data-[state=checked]:border-[#E9074B] data-[state=checked]:bg-[#E9074B]"
         />
@@ -126,43 +101,52 @@ export const EquipmentQuestion = ({ question, update, next }: any) => {
         <p className="mb-6 text-sm text-center text-gray-500">{question.subLabel}</p>
 
         {/* NO EQUIPMENT */}
-        <div
-          onClick={handleNoEquipment}
-          className={`mb-6 flex cursor-pointer items-center justify-between rounded-xl p-3 ${noEquipment ? "border border-red-500 bg-red-50" : "bg-gray-100"} `}
-        >
-          <div className="flex flex-col">
-            <span className="text-lg font-bold text-black">
-              No equipment — bodyweight only
-            </span>
-            <span className="text-sm font-medium text-[#19171799]">
-              Deselects all other options Bodyweight only
-            </span>
+        {bodyweightOption && (
+          <div
+            onClick={handleNoEquipment}
+            className={`mb-6 flex cursor-pointer items-center justify-between rounded-xl p-3 ${noEquipment ? "border border-red-500 bg-red-50" : "bg-gray-100"} `}
+          >
+            <div className="flex flex-col">
+              <span className="text-lg font-bold text-black">
+                {bodyweightOption.label}
+              </span>
+              <span className="text-sm font-medium text-[#19171799]">
+                {bodyweightOption.description}
+              </span>
+            </div>
+
+            <Checkbox
+              checked={noEquipment}
+              onCheckedChange={handleNoEquipment}
+              onClick={(e) => e.stopPropagation()}
+              className="data-[state=checked]:border-[#E9074B] data-[state=checked]:bg-[#E9074B] data-[state=checked]:text-white"
+            />
           </div>
-
-          <Checkbox
-            checked={noEquipment}
-            onCheckedChange={handleNoEquipment}
-            onClick={(e) => e.stopPropagation()}
-            className="data-[state=checked]:border-[#E9074B] data-[state=checked]:bg-[#E9074B] data-[state=checked]:text-white"
-          />
-        </div>
+        )}
+        
         {/* STRENGTH */}
-        <p className="mb-2 text-sm font-semibold text-blue-600">
-          Strength Equipment
-        </p>
-
-        <div className="mb-6 grid grid-cols-1 gap-4 space-y-2 md:grid-cols-2">
-          {strength.map(renderItem)}
-        </div>
+        {strengthOptions.length > 0 && (
+          <>
+            <p className="mb-2 text-sm font-semibold text-blue-600">
+              Strength Equipment
+            </p>
+            <div className="mb-6 grid grid-cols-1 gap-4 space-y-2 md:grid-cols-2">
+              {strengthOptions.map(renderItem)}
+            </div>
+          </>
+        )}
 
         {/* CARDIO */}
-        <p className="mb-2 text-sm font-semibold text-blue-600">
-          Cardio Equipment
-        </p>
-
-        <div className="mb-6 grid grid-cols-1 gap-4 space-y-2 md:grid-cols-2">
-          {cardio.map(renderItem)}
-        </div>
+        {cardioOptions.length > 0 && (
+          <>
+            <p className="mb-2 text-sm font-semibold text-blue-600">
+              Cardio Equipment
+            </p>
+            <div className="mb-6 grid grid-cols-1 gap-4 space-y-2 md:grid-cols-2">
+              {cardioOptions.map(renderItem)}
+            </div>
+          </>
+        )}
 
         {/* INFO BOX */}
         <div className="rounded-xl border border-blue-400 bg-blue-50 p-3 text-sm text-gray-700">

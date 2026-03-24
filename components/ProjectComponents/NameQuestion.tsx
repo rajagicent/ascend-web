@@ -4,8 +4,8 @@
 import { MoveRight } from "lucide-react";
 import { useState } from "react";
 
-export const NameQuestion = ({ question, update, next }: any) => {
-  const [name, setName] = useState("");
+export const NameQuestion = ({ question, value, update, next }: any) => {
+  const [name, setName] = useState(value || "");
 
   const handleContinue = () => {
     if (!name.trim()) {

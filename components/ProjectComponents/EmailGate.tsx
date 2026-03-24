@@ -3,52 +3,84 @@
 
 import { useRef, useState } from "react"
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
 import Image from "next/image"
-import { Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff, Loader2 } from "lucide-react"
+import { signupUser, verifyOtp, resendOtpAction } from "@/action/auth"
+import { useOnboarding } from "@/hooks/useOnboarding"
 
 export const EmailGate = ({ next }: any) => {
+  const { update, state } = useOnboarding();
   const [step, setStep] = useState<"form" | "otp">("form")
   const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  const [email, setEmail] = useState("")
+  const [email, setEmail] = useState(state.answers["email"] || "")
   const [password, setPassword] = useState("")
   const [otp, setOtp] = useState(["", "", "", "", "", ""])
   const inputsRef = useRef<(HTMLInputElement | null)[]>([])
 
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setEmail(val);
+    update("email", val);
+  };
+
   const handleSendOtp = async () => {
     if (!email || !password) return alert("Enter email & password")
 
-    console.log("Send OTP:", { email, password })
+    setLoading(true)
+    const res = await signupUser({ email });
+    setLoading(false)
 
-    // 🔥 API CALL HERE
-    // await fetch("/api/send-otp")
-
-    setStep("otp")
+    if (res.success) {
+      setStep("otp")
+    } else {
+      alert(res.error || "Signup failed")
+    }
   }
 
   const handleVerifyOtp = async () => {
     const code = otp.join("")
-
     if (code.length !== 6) return alert("Enter full OTP")
 
-    console.log("Verify OTP:", code)
+    setLoading(true)
+    const res = await verifyOtp({
+      email,
+      otp: code,
+      password: password
+    });
+    setLoading(false)
 
-    // 🔥 API CALL HERE
-    // await fetch("/api/verify-otp")
+    if (res.success) {
+      // ✅ Save token to client-side cookie
+      const token = res.data?.token || res.data?.data?.token;
+      if (token) {
+        document.cookie = `ascend_token=${token}; path=/; max-age=604800; samesite=lax`;
+      }
+      next()
+    } else {
+      alert(res.error || "Verification failed")
+    }
+  }
 
-    next()
+  const handleResendOtp = async () => {
+    setLoading(true)
+    const res = await resendOtpAction(email);
+    setLoading(false)
+    if (res.success) {
+      alert("OTP resubmitted successfully")
+    } else {
+      alert(res.error || "Failed to resend OTP")
+    }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
     if (e.key === "Backspace") {
       if (otp[index]) {
-        // clear current
         const newOtp = [...otp]
         newOtp[index] = ""
         setOtp(newOtp)
       } else if (index > 0) {
-        // move to previous
         inputsRef.current[index - 1]?.focus()
       }
     }
@@ -61,7 +93,6 @@ export const EmailGate = ({ next }: any) => {
     newOtp[index] = value
     setOtp(newOtp)
 
-    // 👉 Move to next input
     if (value && index < otp.length - 1) {
       inputsRef.current[index + 1]?.focus()
     }
@@ -93,7 +124,7 @@ export const EmailGate = ({ next }: any) => {
               <Input
                 placeholder="Enter Your email address"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={handleEmailChange}
                 className="h-14 rounded-full bg-[#E0EFFF] pl-12"
               />
             </div>
@@ -127,8 +158,10 @@ export const EmailGate = ({ next }: any) => {
 
           <button
             onClick={handleSendOtp}
-            className="mt-10 py-3 cursor-pointer rounded-2xl bg-[#E9074B] text-white"
+            disabled={loading}
+            className="mt-10 flex items-center justify-center gap-2 py-3 cursor-pointer rounded-2xl bg-[#E9074B] text-white disabled:opacity-50"
           >
+            {loading && <Loader2 className="animate-spin" size={20} />}
             Submit
           </button>
         </>
@@ -150,7 +183,7 @@ export const EmailGate = ({ next }: any) => {
             {otp.map((digit, index) => (
               <input
                 key={index}
-                ref={(el) => {(inputsRef.current[index] = el)}}
+                ref={(el) => { (inputsRef.current[index] = el) }}
                 type="text"
                 maxLength={1}
                 value={digit}
@@ -160,21 +193,28 @@ export const EmailGate = ({ next }: any) => {
                   digit
                     ? "border-[#E9074B] font-semibold text-[#E9074B]"
                     : "border-gray-300 text-black"
-                } focus:border-[#E9074B]`}
+                  } focus:border-[#E9074B]`}
               />
             ))}
           </div>
 
           <button
             onClick={handleVerifyOtp}
-            className="py-3 cursor-pointer rounded-2xl bg-[#E9074B] text-white"
+            disabled={loading}
+            className="flex items-center justify-center gap-2 py-3 cursor-pointer rounded-2xl bg-[#E9074B] text-white disabled:opacity-50"
           >
+            {loading && <Loader2 className="animate-spin" size={20} />}
             Verify Code
           </button>
 
           <p className="mt-4 text-center text-sm text-gray-500">
             Haven’t got the email?{" "}
-            <span className="cursor-pointer text-blue-500">Resend email</span>
+            <span
+              onClick={handleResendOtp}
+              className="cursor-pointer text-blue-500 hover:underline"
+            >
+              Resend email
+            </span>
           </p>
         </>
       )}
