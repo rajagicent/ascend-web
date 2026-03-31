@@ -12,6 +12,7 @@ import {
   CartesianGrid,
   Area,
 } from "recharts"
+import WeeklyPlan from "./Weeklyplan"
 
 const data = [
   { name: "WEEK", value: 80 },
@@ -74,6 +75,7 @@ export const InsightScreen = ({ next }: any) => {
 
             {/* GRAPH CARD */}
             <WeightGraph />
+            {/* <WeeklyPlan/> */}
 
             {/* INFO BOX */}
             <div className="my-4 flex items-center justify-center gap-3 rounded-xl bg-[#E0EFFF] p-3 text-sm text-[#1E1E38]">
