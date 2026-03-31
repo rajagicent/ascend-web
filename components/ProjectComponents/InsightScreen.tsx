@@ -10,24 +10,24 @@ import {
   YAxis,
   ResponsiveContainer,
   CartesianGrid,
-  Dot,
-} from "recharts";
+  Area,
+} from "recharts"
 
 const data = [
-  { name: "Current", value: 80 },
-  { name: "", value: 20 },
-  { name: "", value: 20 },
-  { name: "", value: 10 },
-  { name: "Target Week", value: 50 },
-];
+  { name: "WEEK", value: 80 },
+  { name: "WEEK", value: 70 },
+  { name: "WEEK", value: 50 },
+  { name: "WEEK", value: 25 },
+  { name: "WEEK", value: 10 },
+]
 
 export const InsightScreen = ({ next }: any) => {
   const [step, setStep] = useState<"intro" | "result">("intro")
 
   const data = [
-    { label: "Estimated Goal Date" },
-    { label: "Weekly Loss Rate" },
-    { label: "Duration" },
+    { label: "Estimated Goal Date", image: "/freq.png" },
+    { label: "Weekly Loss Rate", image: "/rate.png" },
+    { label: "Duration", image: "/duration.png" },
   ]
 
   return (
@@ -63,7 +63,7 @@ export const InsightScreen = ({ next }: any) => {
       {step === "result" && (
         <div className="flex h-full flex-col justify-between">
           <div>
-            <h2 className="mb-2 text-[#191717] text-2xl font-semibold">
+            <h2 className="mb-2 text-2xl font-semibold text-[#191717]">
               Here&apos;s where you could be, Alex.
             </h2>
 
@@ -73,21 +73,42 @@ export const InsightScreen = ({ next }: any) => {
             </p>
 
             {/* GRAPH CARD */}
-              <WeightGraph/>
+            <WeightGraph />
 
             {/* INFO BOX */}
             <div className="my-4 flex items-center justify-center gap-3 rounded-xl bg-[#E0EFFF] p-3 text-sm text-[#1E1E38]">
-              <Image src="/vacation.png" alt="vacaion" height={30} width={30} />
-              <span className="text-center text-[13px] md:text-[16px] leading-none font-bold text-[#1E1E38]">
-                65 DAYS BEFORE YOUR VACATION
+              <Image src="/dumbell.png" alt="vacaion" height={40} width={40} />
+              <span className="text-center text-[13px] leading-none font-bold text-[#1E1E38] md:text-[16px]">
+                5 lb muscle gain target
               </span>
             </div>
 
-            {/* LOCKED STATS */}
+           <div className="border rounded-2xl p-4">
+             {/* LOCKED STATS */}
+            <p className=" text-lg font-bold mb-4 px-2  text-[#121222]">Premium insights</p>
             <div className="space-y-3">
               {data.map((item, index) => (
-                <LockedItem key={index} label={item.label} />
+                <div key={index} className="flex items-center justify-between pr-4">
+                  <div className="flex gap-2 items-center">
+                    {" "}
+                    <Image
+                      src={item.image}
+                      alt={item.label}
+                      height={40}
+                      width={40}
+                    />
+                    <p>{item.label  }</p>
+                  </div>
+                   <Image
+                      src="/lock.png"
+                      alt={item.label}
+                      height={25}
+                      width={25}
+                      className=""
+                    />
+                </div>
               ))}
+            </div>
             </div>
 
             <p className="mt-6 text-center text-sm text-gray-500">
@@ -107,39 +128,34 @@ export const InsightScreen = ({ next }: any) => {
   )
 }
 
-const LockedItem = ({ label }: { label: string }) => {
+const WeightGraph = () => {
   return (
-    <div className="flex w-full items-center justify-between rounded-[42px] border border-[#E6E2FF] bg-gradient-to-r from-[#F1EFFE] to-white p-4">
-      {/* Left Content */}
-      <div className="flex w-full max-w-[400px] items-center gap-6 px-2 md:px-5">
-        <span className="inline-block w-full max-w-100 text-[13px] font-medium whitespace-nowrap text-[#1E1E38]">
-          {label}
-        </span>
-
-        {/* Blur / Hidden Data */}
-        <div className="flex h-[21px] w-[100px] md:w-[300px] items-center justify-center rounded-md bg-[#E4E2F8]">
-          <span className="text-xs text-[#6B6B9A]"></span>
+    <div className="rounded-[32px] border border-gray-200 bg-white p-5 shadow-sm">
+      {/* Bottom Text */}
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col">
+          <p className="text-sm font-medium text-[#9291A5]">Current</p>
+          <p className="text-base font-bold text-[#1E1B39]">165 lb</p>
+        </div>
+        <div className="flex flex-col">
+          <p className="text-sm font-medium text-[#E9074B]">Target Goal</p>
+          <p className="text-base font-bold text-[#FF2C6C]">165 lb</p>
         </div>
       </div>
-
-      {/* Lock Icon */}
-      <Image src="/lockone.png" height={20} width={20} alt="lock" />
-    </div>
-  )
-}
-
-
-
-
-const WeightGraph=()=> {
-  return (
-   <div className=" rounded-[32px] border border-gray-200 bg-white p-5 shadow-sm">
-      
       {/* Chart */}
       <div className="h-50 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data}>
-            
+          <LineChart
+            data={data}
+            margin={{ top: 10, right: 20, left: 10, bottom: 10 }}
+          >
+            <defs>
+              <linearGradient id="colorShadow" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#E9074B" stopOpacity={0.25} />
+                <stop offset="100%" stopColor="#E9074B" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+
             {/* Grid lines */}
             <CartesianGrid stroke="#eee" vertical={false} />
 
@@ -150,42 +166,35 @@ const WeightGraph=()=> {
               tickLine={false}
               tick={{ fontSize: 10, fill: "#6B7280" }}
             />
-            <YAxis hide />
+            <YAxis hide domain={["dataMin", "dataMax"]} />
+            <Area
+              type="natural"
+              dataKey="value"
+              stroke="none"
+              fill="url(#colorShadow)"
+              fillOpacity={1}
+              baseValue="dataMin"
+            />
 
             {/* Line */}
             <Line
-              type="monotone"
+              type="natural"
               dataKey="value"
               stroke="#E9074B"
               strokeWidth={3}
               dot={<CustomDot dataLength={data.length} />}
-              activeDot={false}
-              isAnimationActive={true}
-              animationDuration={1200}
-              animationEasing="ease-in-out"
+              // activeDot={false}
             />
           </LineChart>
         </ResponsiveContainer>
       </div>
-
-      {/* Bottom Text */}
-      <div className="mt-4 text-center">
-        <p className="text-sm text-gray-400 tracking-wide">
-          WEIGHT FORECAST
-        </p>
-
-        <h2 className="text-3xl font-semibold">
-          <span className="text-black">15 lbs </span>
-          <span className="text-blue-500">to go</span>
-        </h2>
-      </div>
     </div>
-  );
+  )
 }
 const CustomDot = ({ cx, cy, index, dataLength }: any) => {
   // show only first & last dot
   if (index === 0 || index === dataLength - 1) {
-    return <circle cx={cx} cy={cy} r={5} fill="#E9074B" />;
+    return <circle cx={cx} cy={cy} r={5} fill="#E9074B" />
   }
-  return null;
-};
+  return null
+}

@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { Check } from "lucide-react";
 
-const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 const  DayMultiSelect=({
   question,
@@ -49,49 +49,52 @@ const handleContinue = () => {
           const isSelected = selected.includes(day);
 
           return (
-            <button
-              key={day}
-              onClick={() => toggle(day)}
-              className={`flex items-center cursor-pointer justify-between px-4 py-4 rounded-xl border transition-all
-                ${
-                  isSelected
-                    ? "border-[#E9074B] bg-white"
-                    : "border-gray-200 bg-gray-100"
-                }
-              `}
-            >
-              <span
-                className={`font-medium ${
-                  isSelected ? "text-black" : "text-gray-400"
-                }`}
-              >
-                {day}
-              </span>
+          <button
+  key={day}
+  onClick={() => toggle(day)}
+  className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-all
+    ${
+      isSelected
+        ? "border-gray-300 bg-gray-100"
+        : "border-red-300 bg-red-50"
+    }
+  `}
+>
+  {/* Left */}
+  <div className="flex flex-col items-start">
+    <span className="font-medium text-sm text-black">
+      {day}
+    </span>
 
-              {/* Right Icon */}
-              <div
-                className={`w-5 h-5 flex items-center justify-center rounded-full
-                  ${
-                    isSelected
-                      ? "bg-[#E9074B]"
-                      : "bg-gray-300"
-                  }
-                `}
-              >
-                {isSelected ? (
-                  <Check className="w-3 h-3 text-white" />
-                ) : (
-                  <div className="w-2 h-2 bg-gray-500 rounded-full" />
-                )}
-              </div>
-            </button>
+    <span
+      className={`text-xs font-medium ${
+        isSelected ? "text-[#006E1C]" : "text-[#E9074B]"
+      }`}
+    >
+      {isSelected ? "Available" : "Rest Day"}
+    </span>
+  </div>
+
+  {/* Right Icon */}
+  <div
+    className={`w-5 h-5 flex items-center justify-center rounded-full
+      ${isSelected ? "bg-[#006E1C]" : "bg-[#E9074B]"}
+    `}
+  >
+    {isSelected ? (
+      <Check className="w-3 h-3 text-white" />
+    ) : (
+      <span className="text-white text-xs">✕</span>
+    )}
+  </div>
+</button>
           );
         })}
       </div>
 
       {/* Bottom Info */}
       <div className="mt-6 text-center">
-        <div className="rounded-full border border-blue-400 bg-blue-100 py-2 text-xs font-semibold text-blue-600">
+        <div className="rounded-full border border-[#8DC4FF] bg-[#E9F3FF] py-2 text-xs font-semibold text-[#2274F9]">
           {selected.length} DAYS AVAILABLE FOR TRAINING
         </div>
 
