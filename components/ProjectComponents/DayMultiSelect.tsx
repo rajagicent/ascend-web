@@ -6,12 +6,18 @@ import { Check } from "lucide-react";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-const  DayMultiSelect=({
+const DayMultiSelect = ({
   question,
+  value,
   update,
   next,
-}: any)=> {
-  const [selected, setSelected] = useState<string[]>(DAYS);
+}: any) => {
+  const [selected, setSelected] = useState<string[]>(() => {
+    if (!value) return DAYS;
+    if (Array.isArray(value)) return value;
+    if (typeof value === "string") return value.split(", ").map(s => s.trim());
+    return DAYS;
+  });
 
   const toggle = (day: string) => {
     setSelected((prev) =>
