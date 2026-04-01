@@ -50,7 +50,10 @@ export const EventQuestion = ({ question, value, update, next }: any) => {
   }
 
   return (
-    <div className="mx-auto p-6 max-h-[85vh] overflow-y-auto">
+    <div className="mx-auto p-6 max-h-[85vh] overflow-y-auto"   style={{
+    scrollbarWidth: "none",
+    msOverflowStyle: "none",
+  }}>
       <h2 className="text-[#191717] text-2xl text-center font-semibold">{question.label}</h2>
       <p className="mb-8 text-center text-[18px] leading-[26px] text-[#19171799]">
         {question.subLabel}
