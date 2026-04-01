@@ -93,20 +93,20 @@ export const HeightQuestion = ({
         <div className="mb-10 flex w-full rounded-full bg-[#F1F4F9] p-1">
           <button
             onClick={() => handleToggle("Feet")}
-            className={`flex-1 rounded-full px-6 py-2 font-medium ${
+            className={`flex-1 rounded-full cursor-pointer py-2 font-medium ${
               unit === "Feet" ? "bg-white text-[#E9074B] shadow-md" : "text-gray-400"
             }`}
           >
-            Feet + Inches
+            Feet 
           </button>
 
           <button
             onClick={() => handleToggle("Centimeter")}
-            className={`flex-1 rounded-full px-6 py-2 font-medium ${
+            className={`flex-1 rounded-full cursor-pointer py-2 font-medium ${
               unit === "Centimeter" ? "bg-white text-[#E9074B]!  shadow-md" : "text-gray-400"
             }`}
           >
-            Centimeter
+          CM
           </button>
         </div>
 
