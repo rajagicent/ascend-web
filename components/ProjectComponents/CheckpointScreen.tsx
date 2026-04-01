@@ -2,8 +2,37 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { WeightProjectionChart } from "./WeightProjectionChart"
-import { Info, LockKeyhole, MoveRight } from "lucide-react"
+import { LockIcon, LockKeyhole } from "lucide-react"
+import WeightGraph from "./WeightGraph"
+import Image from "next/image"
+
+type Exercise = {
+  name: string
+  sets: number
+  reps: number
+}
+
+type FitnessCardProps = {
+  gymType?: string
+  level?: string
+  headlineHighlight?: string
+  headlineSuffix?: string
+  exercises?: Exercise[]
+}
+
+const exercises: Exercise[] = [
+  { name: "Barbell Squats", sets: 3, reps: 12 },
+  { name: "Overhead Press", sets: 2, reps: 14 },
+  { name: "Pull - ups", sets: 1, reps: 14 },
+]
+
+const graphData = [
+  { name: "W1", value: 80 },
+  { name: "W2", value: 70 },
+  { name: "W3", value: 50 },
+  { name: "W4", value: 25 },
+  { name: "W5", value: 10 },
+]
 
 export const CheckpointScreen = ({ next }: any) => {
   return (
@@ -23,29 +52,16 @@ export const CheckpointScreen = ({ next }: any) => {
           </p>
 
           {/* GRAPH CARD */}
-          <div className="mb-6 rounded-2xl bg-white p-4 shadow">
-            <div className="mb-2 flex items-center justify-between">
-              <p className="text-xs text-gray-500">WEIGHT PROJECTION</p>
-              <span className="rounded-full bg-[#1E1E38] px-4 py-2 text-xs text-white">
-                CONFIDENCE: HIGH
-              </span>
-            </div>
-
-            <p className="mb-4 flex items-center gap-4 text-lg font-semibold">
-              185.4 lbs <MoveRight />{" "}
-              <span className="text-green-600">170.4 lbs</span>
-            </p>
-
+          <div className="">
             {/* GRAPH PLACEHOLDER */}
             <div className="mb-2">
-              <WeightProjectionChart />
-            </div>
-
-            <div className="flex justify-between text-xs text-gray-400">
-              <span>WEEK 1</span>
-              <span>WEEK 4</span>
-              <span>WEEK 8</span>
-              <span>WEEK 12</span>
+              <WeightGraph
+                data={graphData}
+                current="150 lb"
+                target="165 lb"
+                variant="confidence"
+              />
+              {/* <WeeklyPlan/> */}
             </div>
           </div>
 
@@ -59,7 +75,7 @@ export const CheckpointScreen = ({ next }: any) => {
           </div>
 
           {/* PLAN CARD */}
-          <div className="mb-6 rounded-2xl bg-white p-4 shadow">
+          {/* <div className="mb-6 rounded-2xl bg-white p-4 shadow">
             <div className="mb-3 flex gap-2">
               <span className="rounded-full bg-[#E9074B] px-2 py-1.5 text-xs text-white">
                 Commercial Gym
@@ -88,9 +104,76 @@ export const CheckpointScreen = ({ next }: any) => {
               </li>
             </ul>
 
-            <div className="rounded-full w-fit px-10 mx-auto border justify-center flex items-center gap-4 bg-[#DF00001F] border-[#DF0000] py-2 text-center text-xs text-[#DF0000]">
-              <Info size={16}/>
+            <div className="mx-auto flex w-fit items-center justify-center gap-4 rounded-full border border-[#DF0000] bg-[#DF00001F] px-10 py-2 text-center text-xs text-[#DF0000]">
+              <Info size={16} />
               Upgrade required for sets, reps and tempos
+            </div>
+          </div> */}
+
+          <div
+            className="relative h-[280px] p-10 w-full overflow-hidden rounded-[36px] border border-[#F2F2F2] bg-white"
+            style={{ boxShadow: "0px 0px 2px rgba(0,0,0,0.25)" }}
+          >
+            {/* ── Top section: badges + headline ── */}
+            <div className="absolute top-6 right-5 left-5 flex flex-col gap-2">
+              {/* Badges */}
+              <div className="flex flex-row items-center gap-[3px]">
+                {/* Red pill */}
+                <div className="flex h-[23.67px] items-center rounded-[22px] bg-[#E9074B] px-[10px]">
+                  <span className="text-[11.5px] font-medium whitespace-nowrap text-white">
+                    Commercial Gym
+                  </span>
+                </div>
+                {/* Blue pill */}
+                <div
+                  className="flex h-[23.67px] items-center rounded-[17px] px-[10px]"
+                  style={{
+                    background: "rgba(151,201,255,0.16)",
+                    border: "0.56px solid #007AFF",
+                  }}
+                >
+                  <span className="text-[11.5px] font-medium whitespace-nowrap text-[#007AFF]">
+                    Advanced
+                  </span>
+                </div>
+              </div>
+
+              {/* Headline */}
+              <p className="m-0 w-[304px] text-[26px] leading-8 font-bold text-[#181831]">
+                Your <span className="text-[#E9074B]">30 days</span> fat loss
+                plan is taking shape.
+              </p>
+            </div>
+
+            {/* ── Exercise list ── */}
+            <div className="absolute top-[158px] right-5 left-5 flex flex-col gap-[6px]">
+              {exercises.map((ex, i) => (
+                <div
+                  key={i}
+                  className="relative flex h-6 flex-row items-center"
+                >
+                  {/* Blue dot */}
+                  <div className="h-[11px] w-[11px] shrink-0 rounded-full bg-[#007AFF]" />
+
+                  {/* Exercise name */}
+                  <span className="ml-[18px] text-[13.25px] leading-[14px] font-bold text-[#181831]">
+                    {ex.name}
+                  </span>
+
+                  {/* Blurred sets × reps */}
+                  <span
+                    className="absolute text-[13.25px] leading-[14px] font-medium text-[#A2A2B7]"
+                    style={{ right: 40, filter: "blur(3px)" }}
+                  >
+                    {ex.sets} sets × {ex.reps} reps
+                  </span>
+
+                  {/* Lock icon */}
+                  <span className="absolute right-0">
+                    <Image src="/lock.png" alt="lock" height={20} width={20} />
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -98,7 +181,7 @@ export const CheckpointScreen = ({ next }: any) => {
         {/* CTA */}
         <Button
           onClick={next}
-          className="mx-auto flex w-full max-w-100 cursor-pointer items-center justify-center rounded-2xl bg-[#E9074B] py-6 text-lg text-white"
+          className="mx-auto mt-6 flex w-full max-w-100 cursor-pointer items-center justify-center rounded-2xl bg-[#E9074B] py-6 text-lg text-white"
         >
           Complete My Profile
         </Button>

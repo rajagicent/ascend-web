@@ -3,23 +3,16 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  ResponsiveContainer,
-  CartesianGrid,
-  Area,
-} from "recharts"
-import WeeklyPlan from "./Weeklyplan"
 
-const data = [
-  { name: "WEEK", value: 80 },
-  { name: "WEEK", value: 70 },
-  { name: "WEEK", value: 50 },
-  { name: "WEEK", value: 25 },
-  { name: "WEEK", value: 10 },
+import WeightGraph from "./WeightGraph"
+import { CalendarIcon } from "lucide-react"
+
+const graphData = [
+  { name: "W1", value: 80 },
+  { name: "W2", value: 70 },
+  { name: "W3", value: 50 },
+  { name: "W4", value: 25 },
+  { name: "W5", value: 10 },
 ]
 
 export const InsightScreen = ({ next }: any) => {
@@ -74,7 +67,14 @@ export const InsightScreen = ({ next }: any) => {
             </p>
 
             {/* GRAPH CARD */}
-            <WeightGraph />
+            {/* <WeightGraph data={graphData} current="165 lb" target="150 lb" /> */}
+            <WeightGraph
+              data={graphData}
+              current="150 lb"
+              target="165 lb"
+              variant="simple"
+            />
+
             {/* <WeeklyPlan/> */}
 
             {/* INFO BOX */}
@@ -85,32 +85,54 @@ export const InsightScreen = ({ next }: any) => {
               </span>
             </div>
 
-           <div className="border rounded-2xl p-4">
-             {/* LOCKED STATS */}
-            <p className=" text-lg font-bold mb-4 px-2  text-[#121222]">Premium insights</p>
-            <div className="space-y-3">
-              {data.map((item, index) => (
-                <div key={index} className="flex items-center justify-between pr-4">
-                  <div className="flex gap-2 items-center">
-                    {" "}
+            <div className="relative h-[125px] w-full mb-4 overflow-hidden rounded-[17px] border border-[#F2F1FF] bg-white">
+              {/* Header row: icon + label */}
+              <div className="absolute top-3 left-4 flex flex-row items-center gap-[9px]">
+                {/* <CalendarIcon /> */<Image src="/calender.png" alt="freq" height={30} width={30} />}
+                <span className="font-sans text-[15px] leading-[108%] font-medium tracking-[-0.01em] whitespace-nowrap text-[#9291A5]">
+                  UPCOMING MILESTONE
+                </span>
+              </div>
+
+              {/* Title line 1 */}
+              <p className="absolute top-[50px] left-6  text-[19.74px] leading-7 font-bold tracking-normal whitespace-nowrap text-[#1E1B39] uppercase">
+                Lose 5 lbs in 65 days before your vacation
+              </p>
+
+           
+            </div>
+
+            <div className="rounded-2xl border p-4">
+              {/* LOCKED STATS */}
+              <p className="mb-4 px-2 text-lg font-bold text-[#121222]">
+                Premium insights
+              </p>
+              <div className="space-y-3">
+                {data.map((item, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between pr-4"
+                  >
+                    <div className="flex items-center gap-2">
+                      {" "}
+                      <Image
+                        src={item.image}
+                        alt={item.label}
+                        height={40}
+                        width={40}
+                      />
+                      <p>{item.label}</p>
+                    </div>
                     <Image
-                      src={item.image}
-                      alt={item.label}
-                      height={40}
-                      width={40}
-                    />
-                    <p>{item.label  }</p>
-                  </div>
-                   <Image
                       src="/lock.png"
                       alt={item.label}
                       height={25}
                       width={25}
                       className=""
                     />
-                </div>
-              ))}
-            </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <p className="mt-6 text-center text-sm text-gray-500">
@@ -128,75 +150,4 @@ export const InsightScreen = ({ next }: any) => {
       )}
     </div>
   )
-}
-
-const WeightGraph = () => {
-  return (
-    <div className="rounded-[32px] border border-gray-200 bg-white p-5 shadow-sm">
-      {/* Bottom Text */}
-      <div className="flex items-center justify-between">
-        <div className="flex flex-col">
-          <p className="text-sm font-medium text-[#9291A5]">Current</p>
-          <p className="text-base font-bold text-[#1E1B39]">165 lb</p>
-        </div>
-        <div className="flex flex-col">
-          <p className="text-sm font-medium text-[#E9074B]">Target Goal</p>
-          <p className="text-base font-bold text-[#FF2C6C]">165 lb</p>
-        </div>
-      </div>
-      {/* Chart */}
-      <div className="h-50 w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart
-            data={data}
-            margin={{ top: 10, right: 20, left: 10, bottom: 10 }}
-          >
-            <defs>
-              <linearGradient id="colorShadow" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#E9074B" stopOpacity={0.25} />
-                <stop offset="100%" stopColor="#E9074B" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-
-            {/* Grid lines */}
-            <CartesianGrid stroke="#eee" vertical={false} />
-
-            {/* Hide axis lines */}
-            <XAxis
-              dataKey="name"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 10, fill: "#6B7280" }}
-            />
-            <YAxis hide domain={["dataMin", "dataMax"]} />
-            <Area
-              type="natural"
-              dataKey="value"
-              stroke="none"
-              fill="url(#colorShadow)"
-              fillOpacity={1}
-              baseValue="dataMin"
-            />
-
-            {/* Line */}
-            <Line
-              type="natural"
-              dataKey="value"
-              stroke="#E9074B"
-              strokeWidth={3}
-              dot={<CustomDot dataLength={data.length} />}
-              // activeDot={false}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
-  )
-}
-const CustomDot = ({ cx, cy, index, dataLength }: any) => {
-  // show only first & last dot
-  if (index === 0 || index === dataLength - 1) {
-    return <circle cx={cx} cy={cy} r={5} fill="#E9074B" />
-  }
-  return null
 }
