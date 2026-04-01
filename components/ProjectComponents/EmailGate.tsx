@@ -28,16 +28,16 @@ export const EmailGate = ({ next }: any) => {
   const handleSubmit = async () => {
     if (!email) return alert("Enter email")
 
-    setLoading(true)
-    const res = await signupUser({ email });
-    setLoading(false)
+    // setLoading(true)
+    // const res = await signupUser({ email });
+    // setLoading(false)
 
-    if (res.success) {
+    // if (res.success) {
       // setStep("otp")
       next()
-    } else {
-      alert(res.error || "Signup failed")
-    }
+    // } else {
+      // alert(res.error || "Signup failed")
+    // }
   }
 
  
@@ -74,7 +74,7 @@ export const EmailGate = ({ next }: any) => {
 
           <button
             onClick={handleSubmit}
-            disabled={loading}
+            // disabled={loading}
             className="mt-10 flex items-center justify-center gap-2 py-3 cursor-pointer rounded-2xl bg-[#E9074B] text-white disabled:opacity-50"
           >
             {loading && <Loader2 className="animate-spin" size={20} />}

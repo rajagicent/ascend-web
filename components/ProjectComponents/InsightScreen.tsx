@@ -74,11 +74,12 @@ export const InsightScreen = ({ next }: any) => {
             </p>
 
             {/* GRAPH CARD */}
-            <WeightGraph />
-            {/* <WeeklyPlan/> */}
+            {/* <WeightGraph />  lean , fat loss, gain */}   
+            <WeeklyPlan/> {/*healthy*/}
 
             {/* INFO BOX */}
-            <div className="my-4 flex items-center justify-center gap-3 rounded-xl bg-[#E0EFFF] p-3 text-sm text-[#1E1E38]">
+            <div className="my-4 flex items-center justify-center gap-3 rounded-xl bg-[#E0EFFF
+] p-3 text-sm text-[#1E1E38]">
               <Image src="/dumbell.png" alt="vacaion" height={40} width={40} />
               <span className="text-center text-[13px] leading-none font-bold text-[#1E1E38] md:text-[16px]">
                 5 lb muscle gain target
