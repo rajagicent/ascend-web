@@ -109,7 +109,7 @@ export const InsightScreen = ({ next }: any) => {
 
 const LockedItem = ({ label }: { label: string }) => {
   return (
-    <div className="flex w-full items-center justify-between rounded-[42px] border border-[#E6E2FF] bg-gradient-to-r from-[#F1EFFE] to-white p-4">
+    <div className="flex w-full items-center justify-between rounded-[42px] border border-[#E6E2FF] bg-linear-to-r from-[#F1EFFE] to-white p-4">
       {/* Left Content */}
       <div className="flex w-full max-w-[400px] items-center gap-6 px-2 md:px-5">
         <span className="inline-block w-full max-w-100 text-[13px] font-medium whitespace-nowrap text-[#1E1E38]">
