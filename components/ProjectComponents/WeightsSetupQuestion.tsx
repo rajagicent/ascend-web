@@ -85,7 +85,7 @@ export const WeightsSetupQuestion = ({ question, value, update, next }: any) => 
   )
 
   return (
-    <div className="mx-auto flex min-h-screen flex-col p-4 max-h-[85vh] overflow-y-auto">
+    <div className="mx-auto flex min-h-screen flex-col  p-4  ">
       <div className="flex-1">
         <h2 className="mb-2 text-xl md:text-3xl text-center font-semibold">
           {question.label}
@@ -168,7 +168,7 @@ export const WeightsSetupQuestion = ({ question, value, update, next }: any) => 
       {/* CONTINUE */}
       <button
         onClick={handleContinue}
-        className="mt-6 w-full max-w-100 flex items-center justify-center mx-auto cursor-pointer rounded-2xl bg-[#E9074B] py-3 text-white font-bold transition-transform active:scale-[0.98]"
+        className="mt-6   w-full max-w-100 flex items-center justify-center mx-auto cursor-pointer rounded-2xl bg-[#E9074B] py-3 text-white font-bold transition-transform active:scale-[0.98]"
       >
         Continue
       </button>

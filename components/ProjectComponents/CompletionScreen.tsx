@@ -317,7 +317,7 @@ const ExerciseCard = ({
       width={100}
       src={image}
       alt={name}
-      className="h-32.5 w-37.5 min-w-35 rounded-2xl object-cover"
+      className="h-32.5 w-30 md:w-37.5 min-w-30 rounded-2xl object-cover"
     />
     <div className="flex flex-1 flex-col justify-center gap-2 px-4 py-3">
       <p className="m-0 text-[18px] font-bold tracking-wide text-white">
@@ -425,7 +425,7 @@ const MilestoneCard = ({ title, weeks, description }: MilestoneCardProps) => {
       <div className="mb-1 flex items-baseline gap-2">
         <span
           className="leading-none"
-          style={{ fontSize: 48, fontWeight: 700, color: "#E9074B" }}
+          style={{ fontSize: 48, fontWeight: 700, color: "" }}
         >
           {weeks}
         </span>
