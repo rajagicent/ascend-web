@@ -17,6 +17,7 @@ export interface FinalSubmitPayload {
   variation_id: number;
   goal: string;
   answers: any[];
+  uuid: string;
 }
 
 // Fetch the user's resumed state from Redis based on UUID
@@ -57,11 +58,16 @@ export async function saveRedisSurveyHistory(payload: RedisSavePayload, uuid: st
 
 // Final Submission
 export async function submitFinalSurvey(payload: FinalSubmitPayload) {
+  console.log("payload");
   try {
 
     console.log(payload);
 
-    const res = await serverApi.post(ENDPOINT.QUESANSWER_SUBMIT, payload)
+    const res = await serverApi.post(ENDPOINT.QUESANSWER_SUBMIT, payload, {
+      headers:{
+        "x-session-id": payload.uuid
+      }
+    })
     return { success: true, data: res.data }
   } catch (error: any) {
     console.error("submitFinalSurvey Error:", error?.response?.data || error.message)

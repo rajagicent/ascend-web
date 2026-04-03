@@ -71,11 +71,13 @@ export default function OnboardingFlow() {
   const mappedQuestion = apiQuestion
     ? {
         id: apiQuestion.field_id || apiQuestion.id.toString(),
+        field_id: apiQuestion.field_id,
         component: getComponentType(apiQuestion),
         label: apiQuestion.question,
         subLabel: apiQuestion.sub_question,
         options: apiQuestion.options,
         autoNext: apiQuestion.auto_next,
+        placeholder: apiQuestion.placeholder,
         selection: apiQuestion.type === "checkbox" ? "multiple" : "single",
       }
     : null;

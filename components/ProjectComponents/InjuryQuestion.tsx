@@ -44,7 +44,7 @@ export const InjuryQuestion = ({ question, value, update, next }: any) => {
 
   const handleContinue = () => {
     const finalData = noIssues ? ["INJ_000"] : selected
-    update(question.id, finalData)
+    update(question.field_id || question.id, finalData)
     next()
   }
 

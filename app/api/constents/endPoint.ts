@@ -6,4 +6,6 @@ export const ENDPOINT = {
     QUESANSWER_SUBMIT : "/api/v1/survey-questions/create-survey-question-set-history",
     REDIS_SAVE_QUESTIONS : "/api/v1/redis/create-survey-history",
     REDIS_GET_QUESTIONS : "/api/v1/redis/get-resume-survey-history",
+    CHECK_USER_EMAIL: "/api/v1/users/get-user-email",
+    FREE_TRIAL : "/api/v1/gateway/free-subscription",
 }

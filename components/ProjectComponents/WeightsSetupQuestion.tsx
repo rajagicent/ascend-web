@@ -54,7 +54,7 @@ export const WeightsSetupQuestion = ({ question, value, update, next }: any) => 
 
   const handleContinue = () => {
     const data = { dumbbells, kettlebells, plates }
-    update(question.id, data)
+    update(question.field_id || question.id, data)
     next()
   }
 

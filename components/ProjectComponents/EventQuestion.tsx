@@ -37,7 +37,7 @@ export const EventQuestion = ({ question, value, update, next }: any) => {
   }, [value]);
 
   const handleContinue = () => {
-    update(question.id, {
+    update(question.field_id || question.id, {
       event: selectedEvent,
       date: selectedDate,
     })
@@ -45,7 +45,7 @@ export const EventQuestion = ({ question, value, update, next }: any) => {
   }
 
   const handleSkip = () => {
-    update(question.id, { event: "EVENT_000", date: null })
+    update(question.field_id || question.id, { event: "EVENT_000", date: null })
     next()
   }
 

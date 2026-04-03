@@ -24,26 +24,16 @@ const getGeneratedFlow = (
 ) => {
   const generatedFlow: string[] = [];
 
-  surveyData.data.stages.forEach((stage, index) => {
+  surveyData.data.stages.forEach((stage) => {
     stage.questions.forEach((q) => {
       generatedFlow.push(q.id.toString());
     });
-    if (index === 0) {
-      generatedFlow.push("email_gate", "insight");
-    } else if (index === 1) {
-      generatedFlow.push("checkpoint");
-    }
   });
 
-  if (surveyData.data.stages.length <= 1) {
-    generatedFlow.push("checkpoint");
-  }
-
-  generatedFlow.push("complete");
-
-  return generatedFlow.filter((stepId) => {
+  // Filter out conditional questions first!
+  const filteredFlow = generatedFlow.filter((stepId) => {
     const q = questionsMap[stepId];
-    if (!q) return true; // Keep checkpoints like "email_gate"
+    if (!q) return true;
 
     // === CUSTOM DEPENDENCY RULES ===
     // "What's driving you to make this change?" -> depends on "goal" (ID: 103)
@@ -51,6 +41,9 @@ const getGeneratedFlow = (
     if (q.field_id === "motivation_muscle" && answers["goal"] !== "GOAL_002") return false;
     if (q.field_id === "motivation_lean" && answers["goal"] !== "GOAL_003") return false;
     if (q.field_id === "motivation_health" && answers["goal"] !== "GOAL_004") return false;
+    
+    // Skip target_weight and event if goal is "Get healthier" (GOAL_004)
+    if ((q.field_id === "target_weight" || q.field_id === "event") && answers["goal"] === "GOAL_004") return false;
 
     // Skip equipment/weights if location is "No equipment" (LOC_004)
     if ((q.field_id === "equipment" || q.field_id === "weights") && answers["location"] === "LOC_004") return false;
@@ -63,6 +56,33 @@ const getGeneratedFlow = (
 
     return true;
   });
+
+  // Force 'name' question to appear after 'days' question
+  const nameId = Object.values(questionsMap).find(q => q.field_id === "name")?.id.toString();
+  const daysId = Object.values(questionsMap).find(q => q.field_id === "days")?.id.toString();
+
+  if (nameId && daysId) {
+    const nameIdx = filteredFlow.indexOf(nameId);
+    if (nameIdx > -1) {
+      filteredFlow.splice(nameIdx, 1); // Remove from current position
+      const newDaysIdx = filteredFlow.indexOf(daysId);
+      if (newDaysIdx > -1) {
+        filteredFlow.splice(newDaysIdx + 1, 0, nameId); // Re-insert after days
+      }
+    }
+  }
+
+  // Now insert checkpoints at 40% and 70% and 100% dynamically based on the actual length
+  const total = filteredFlow.length;
+  const i40 = Math.floor(total * 0.4);
+  const i70 = Math.floor(total * 0.7);
+
+  // We splice backwards so indices don't shift for earlier insertions
+  filteredFlow.splice(i70, 0, "checkpoint");
+  filteredFlow.splice(i40, 0, "email_gate", "insight");
+  filteredFlow.push("complete");
+
+  return filteredFlow;
 };
 
 const reducer = (state: State, action: Action): State => {

@@ -4,6 +4,14 @@ import { ENDPOINT } from "@/app/api/constents/endPoint";
 import { serverApi } from "@/utils/serverApi";
 import { cookies } from "next/headers";
 
+interface CheckUserEmailResponse {
+  message: string;
+  data: {
+    token: string;
+  success: boolean;
+  }
+}
+
 export async function signupUser(payload: { email: string }) {
   try {
     const response = await serverApi.post(ENDPOINT.USER_SIGNUP, payload, {
@@ -55,5 +63,16 @@ export async function resendOtpAction(email: string) {
     return { success: true, data: response };
   } catch (error: any) {
     return { success: false, error: error.message };
+  }
+}
+
+export async function checkUserEmail(email: string): Promise<CheckUserEmailResponse> {
+  try {
+    const response = await serverApi.post(ENDPOINT.CHECK_USER_EMAIL, { email }, {
+        disableAuth: true
+    });
+    return response as CheckUserEmailResponse;
+  } catch (error: any) {
+    return error;
   }
 }

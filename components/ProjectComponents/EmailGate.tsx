@@ -5,19 +5,16 @@ import { useRef, useState } from "react"
 import { Input } from "@/components/ui/input"
 import Image from "next/image"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
-import { signupUser, verifyOtp, resendOtpAction } from "@/action/auth"
+import { signupUser, verifyOtp, resendOtpAction, checkUserEmail } from "@/action/auth"
 import { useOnboarding } from "@/hooks/useOnboarding"
+import Cookies from "js-cookie"
 
 export const EmailGate = ({ next }: any) => {
   const { update, state } = useOnboarding();
-  const [step, setStep] = useState<"form" | "otp">("form")
-  const [showPassword, setShowPassword] = useState(false)
+
   const [loading, setLoading] = useState(false)
 
   const [email, setEmail] = useState(state.answers["email"] || "")
-  const [password, setPassword] = useState("")
-  const [otp, setOtp] = useState(["", "", "", "", "", ""])
-  const inputsRef = useRef<(HTMLInputElement | null)[]>([])
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -28,16 +25,18 @@ export const EmailGate = ({ next }: any) => {
   const handleSubmit = async () => {
     if (!email) return alert("Enter email")
 
-    // setLoading(true)
-    // const res = await signupUser({ email });
-    // setLoading(false)
+    setLoading(true)
+    const res = await checkUserEmail(email);
+    if(res.data.success){
+      Cookies.set("ascend_token", res.data.token, { expires: 7 });
+    }
+    setLoading(false)
 
-    // if (res.success) {
-      // setStep("otp")
+    if (res.data.success) {
       next()
-    // } else {
-      // alert(res.error || "Signup failed")
-    // }
+    } else {
+      alert(res.message || "Email check failed")
+    }
   }
 
  
@@ -74,7 +73,7 @@ export const EmailGate = ({ next }: any) => {
 
           <button
             onClick={handleSubmit}
-            // disabled={loading}
+            disabled={loading}
             className="mt-10 flex items-center justify-center gap-2 py-3 cursor-pointer rounded-2xl bg-[#E9074B] text-white disabled:opacity-50"
           >
             {loading && <Loader2 className="animate-spin" size={20} />}

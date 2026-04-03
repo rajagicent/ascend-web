@@ -13,14 +13,13 @@ export const NameQuestion = ({ question, value, update, next }: any) => {
       return;
     }
 
-    update(question.id, name);
+    update(question.field_id || question.id, name);
     console.log("Name:", name);
-
     next();
   };
 
   const handleSkip = () => {
-    update(question.id, null);
+    update(question.field_id || question.id, null);
     next();
   };
 

@@ -51,7 +51,7 @@ export const EquipmentQuestion = ({ question, value, update, next }: any) => {
 
   const handleContinue = () => {
     const finalData = noEquipment ? ["EQUIP_013"] : selected
-    update(question.id, finalData)
+    update(question.field_id || question.id, finalData)
     next()
   }
 

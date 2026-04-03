@@ -2,6 +2,9 @@
 "use client"
 
 import React, { useState, useRef, useEffect, useCallback } from "react"
+import { useOnboarding } from "@/hooks/useOnboarding";
+import { useSurveyRules, ValidationMessage } from "@/hooks/useSurveyRules";
+import { Info, AlertCircle, CheckCircle2 } from "lucide-react";
 
 const lbsToKg = (lbs: number) => lbs / 2.20462;
 const kgToLbs = (kg: number) => kg * 2.20462;
@@ -21,6 +24,9 @@ const WeightQuestion = ({
   const [isDragging, setIsDragging] = useState(false)
   const [hasSelected, setHasSelected] = useState(false)
 
+  const { state } = useOnboarding();
+  const { evaluateRules } = useSurveyRules();
+  const [msg, setMsg] = useState<ValidationMessage | null>(null);
 
   // 🔥 Hydrate from value prop
   useEffect(() => {
@@ -42,7 +48,6 @@ const WeightQuestion = ({
   const pixelsPerUnit = 120
   const ticksPerUnit = 10
 
-
   const getDisplayValue = () => {
     return unit === "KG" ? lbsToKg(currentValue) : currentValue
   }
@@ -51,6 +56,17 @@ const WeightQuestion = ({
   const getFinalWeightInKg = () => {
     return Math.round(lbsToKg(currentValue))
   }
+
+  // Evaluate rules instantly when metrics change
+  useEffect(() => {
+    if (hasSelected) {
+      const finalKg = getFinalWeightInKg();
+      const fieldId = question.field_id || question.id;
+      const tempAnswers = { ...state.answers, [fieldId]: finalKg };
+      const { message } = evaluateRules(question, finalKg, tempAnswers);
+      setMsg(message);
+    }
+  }, [currentValue, hasSelected]);
 
   // ===== UPDATE =====
   const updateValue = useCallback(
@@ -142,18 +158,53 @@ const WeightQuestion = ({
     const finalKg = getFinalWeightInKg()
 
     if (!finalKg) {
-      alert("Please enter weight")
-      return
+      setMsg({ text: "Please enter your weight.", type: "warning", color: "red" });
+      return;
     }
 
-    console.log("Final Weight (kg):", finalKg)
+    const fieldId = question.field_id || question.id;
+    const tempAnswers = { ...state.answers, [fieldId]: finalKg };
+    const { isValid, message } = evaluateRules(question, finalKg, tempAnswers);
+
+    if (!isValid) {
+      setMsg(message);
+      return;
+    }
 
     // ✅ save globally
-    update(question.id, finalKg)
+    update(fieldId, finalKg)
 
     // ✅ go next
     next()
   }
+
+  const renderMessage = () => {
+    if (!msg) return null;
+    
+    let bgColor = "bg-blue-50";
+    let iconColor = "text-blue-500";
+    let Icon = Info;
+    let borderColor = "border-blue-200";
+
+    if (msg.color === "red") {
+      bgColor = "bg-red-50";
+      iconColor = "text-red-500";
+      borderColor = "border-red-200";
+      Icon = AlertCircle;
+    } else if (msg.color === "green") {
+      bgColor = "bg-green-50";
+      iconColor = "text-green-500";
+      borderColor = "border-green-200";
+      Icon = CheckCircle2;
+    }
+
+    return (
+      <div className={`mt-6 mb-4 flex items-start w-full max-w-[400px] gap-3 rounded-xl border ${borderColor} ${bgColor} p-4 text-sm font-medium ${iconColor.replace('text', 'text').replace('500', '700')}`}>
+        <Icon className={`mt-0.5 h-5 w-5 shrink-0 ${iconColor}`} />
+        <p className="leading-relaxed">{msg.text}</p>
+      </div>
+    );
+  };
 
   // ===== UI =====
   const renderMarks = () => {
@@ -189,7 +240,7 @@ const WeightQuestion = ({
   return (
     <div className="flex min-h-[calc(100vh-60px)] w-full flex-col items-center py-10 md:min-h-[calc(100vh-200px)]">
       <div className="flex-1 w-full">
-       <div className="text-center flex justify-center items-center flex-col ">
+       <div className="text-center flex justify-center items-center flex-col p-4">
          <h2 className="text-center text-2xl font-bold text-[#191717]">
           {question.label}
         </h2>
@@ -201,7 +252,7 @@ const WeightQuestion = ({
          {/* Sub label appears after selection */}
         {hasSelected && (
           <p className="mb-6 max-w-xl text-center text-base text-gray-500">
-            {question.id === "current" ? (
+            {question.id === "weight" ? (
               <>{question.subLabel}</>
             ) : (
               <>
@@ -219,16 +270,16 @@ const WeightQuestion = ({
         <div className="mb-10 flex w-full max-w-xs rounded-full bg-[#F1F4F9] p-1">
           <button
             onClick={() => handleToggle("LBS")}
-            className={`flex-1 rounded-full py-2 ${
-              unit === "LBS" ? "bg-white shadow-md" : "text-gray-400"
+            className={`flex-1 rounded-full py-2 font-medium transition-all ${
+              unit === "LBS" ? "bg-white shadow-md text-[#E9074B]" : "text-gray-400"
             }`}
           >
             LBS
           </button>
           <button
             onClick={() => handleToggle("KG")}
-            className={`flex-1 rounded-full py-2 ${
-              unit === "KG" ? "bg-white shadow-md" : "text-gray-400"
+            className={`flex-1 rounded-full py-2 font-medium transition-all ${
+              unit === "KG" ? "bg-white shadow-md text-[#E9074B]" : "text-gray-400"
             }`}
           >
             KG
@@ -241,53 +292,31 @@ const WeightQuestion = ({
             type="text"
             value={inputValue}
             onChange={handleInputChange}
-            className="w-36 text-center text-5xl font-bold"
+            className="w-36 text-center text-5xl font-bold outline-none"
           />
-          <span className="ml-2 text-2xl">{unit}</span>
+          <span className="ml-2 text-2xl font-medium">{unit}</span>
         </div>
 
        </div>
 
-       
-       
-
         {/* RULER */}
         <div
-          className="relative h-[70px] w-full cursor-grab overflow-hidden bg-black"
+          className="relative h-[80px] w-full cursor-grab overflow-hidden bg-black select-none"
           onMouseDown={handleMouseDown}
         >
           {renderMarks()}
         </div>
         
       </div>
-      <div>
-        {hasSelected && (
-          <div className="mt-10 mb-4 flex w-full max-w-[400px] items-center gap-2 rounded-xl border border-blue-400 bg-blue-50 p-4 text-sm text-gray-700">
-            <div className="mt-1 h-2 w-2 rounded-full bg-blue-500" />
-
-            <p>
-              {question.id === "current"
-                ? "Your starting point is set. Now let's define where you're going."
-                : "Target Set. We'll build your timeline around this"}
-            </p>
-          </div>
-        )}
+      
+      <div className="w-full flex justify-center px-4">
+        {hasSelected && renderMessage()}
       </div>
 
-      
-        <p className="my-2 text-sm font-medium text-[#E9074B]">
-          Please double-check your height
-        </p>
-      
-
-      <div className="mt-4 flex items-center justify-center w-full">
-        {/* CONTINUE BUTTON */}
-        
+      <div className="mt-4 flex items-center justify-center w-full px-4">
         <button
           onClick={handleContinue}
-        className="w-full  max-w-[400px]  bg-[#E9074B] cursor-pointer text-white py-3 rounded-2xl font-semibold"
-
-          // className="mt-6 max-w-[400px] mx-auto  w-full cursor-pointer rounded-2xl bg-[#E9074B] py-4 font-semibold text-white"
+          className="w-full max-w-[400px] bg-[#E9074B] hover:bg-[#d60644] transition-all active:scale-[0.98] cursor-pointer text-white py-4 rounded-2xl font-semibold text-[18px]"
         >
           Continue
         </button>

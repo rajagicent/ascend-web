@@ -1,63 +1,16 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { WeightProjectionChart } from "./WeightProjectionChart"
+
 import Image from "next/image"
-import TestimonialCard from "./TestimonialCard";
-import { useOnboarding } from "@/hooks/useOnboarding";
-import { submitFinalSurvey } from "@/action/redisApi";
-import { useState } from "react";
-import { Loader2 } from "lucide-react";
-
-
-const CalendarIcon = () => (
-  <svg
-    width="15"
-    height="15"
-    viewBox="0 0 20 20"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <rect x="2" y="4" width="16" height="14" rx="3" stroke="white" strokeWidth="1.5" />
-    <path d="M2 8h16" stroke="white" strokeWidth="1.5" />
-    <path d="M7 2v3M13 2v3" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-    <circle cx="7" cy="12" r="1" fill="white" />
-    <circle cx="10" cy="12" r="1" fill="white" />
-    <circle cx="13" cy="12" r="1" fill="white" />
-  </svg>
-);
- 
-const DumbbellIcon = () => (
-  <svg
-    width="15"
-    height="15"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="#8B9FD4"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M6 4v4M18 4v4M3 8h4l2 4h6l2-4h4M7 12v8M17 12v8" />
-  </svg>
-);
- 
-const ClockIcon = () => (
-  <svg
-    width="15"
-    height="15"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="#8B9FD4"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="12" cy="12" r="9" />
-    <path d="M12 7v5l3 3" />
-  </svg>
-);
-
+import TestimonialCard from "./TestimonialCard"
+import { useOnboarding } from "@/hooks/useOnboarding"
+import { submitFinalSurvey } from "@/action/redisApi"
+import { useState } from "react"
+import { CalendarDays, Dumbbell, Loader2, Timer } from "lucide-react"
+import WeightGraph from "./WeightGraph"
+import MilestoneTimeline from "./Milestonetimeline"
+import Link from "next/link"
 
 const exercises = [
   {
@@ -65,313 +18,285 @@ const exercises = [
     sets: 3,
     reps: 10,
     rest: "60s rest",
-    image:
-      "/squats.svg",
+    image: "/dumbellbg.svg",
   },
   {
     name: "Overhead Press",
     sets: 3,
     reps: 10,
     rest: "60s rest",
-    image:
-      "/overhead.svg",
+    image: "/dumbellbg.svg",
   },
   {
     name: "Pull-ups",
     sets: 3,
     reps: 10,
     rest: "60s rest",
-    image:
-      "/pull.svg",
+    image: "/dumbellbg.svg",
   },
-];
- 
+]
+
+type MilestoneCardProps = {
+  title: string
+  weeks: number
+  description: string
+}
+
+const milestoneData: MilestoneCardProps[] = [
+  {
+    title: "First Milestone",
+    weeks: 2,
+    description: "Consistency established",
+  },
+  {
+    title: "Next Checkpoint",
+    weeks: 4,
+    description: "improved energy",
+  },
+]
+
+const graphData = [
+  { name: "W1", value: 80 },
+  { name: "W2", value: 70 },
+  { name: "W3", value: 50 },
+  { name: "W4", value: 25 },
+  { name: "W5", value: 10 },
+]
 
 const CompleteScreen = () => {
-  const { state, questionsMap } = useOnboarding();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { state, questionsMap } = useOnboarding()
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleStartPlan = async () => {
-    setIsSubmitting(true);
-    try {
-      const answersArray = Object.entries(state.answers)
-        .filter(([key]) => key !== "email") // ❌ Don't send email in answers array
-        .map(([key, value]) => {
-        const q = questionsMap[key];
-        
-        let answerText = "";
-        let answerId = "";
+  const name = state.answers["name"] || "Alex"
+  const goal = state.answers["goal"]
+  const isHealthyGoal = goal === "GOAL_004"
+  const Gate = goal === "GOAL_001" ? "fat_loss" : goal === "GOAL_002" ? "muscle_gain" : "general_fitness"
 
-        if (q && q.options) {
-          if (Array.isArray(value)) {
-            const labels = q.options
-              .filter(opt => value.includes(opt.value))
-              .map(opt => opt.label);
-            answerText = labels.length > 0 ? labels.join(", ") : value.join(", ");
-            answerId = value.join(", ");
-          } else {
-            const opt = q.options.find(o => o.value === value);
-            answerText = opt ? opt.label : String(value);
-            answerId = String(value);
-          }
-        } else {
-          answerText = typeof value === 'object' ? JSON.stringify(value) : String(value);
-          answerId = typeof value === 'object' ? JSON.stringify(value) : String(value);
-        }
-
-        return {
-          question_id: q ? q.id : (Number(key) || 0),
-          field_id: q ? q.field_id : key,
-          answer_id: answerId,
-          answer: answerText,
-          set_id: q ? q.set_id : 0,
-        };
-      });
-
-      const goalAnswer = state.answers["goal"] || "";
-      let goalText = "";
-      if (questionsMap["goal"] && questionsMap["goal"].options) {
-        const matchingOpt = questionsMap["goal"].options.find(o => o.value === goalAnswer);
-        goalText = matchingOpt ? matchingOpt.label : goalAnswer;
-      }
-
-      const res = await submitFinalSurvey({
-        variation_id: 4,
-        goal: goalText || goalAnswer,
-        answers: answersArray,
-      });
-
-      if (res.success) {
-        localStorage.removeItem("onboarding_data");
-        localStorage.removeItem("onboarding_step");
-        window.location.href = "/";
-      } else {
-        alert(res.error || "Failed to submit survey");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("An unexpected error occurred");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <div className="flex min-h-screen flex-col justify-center p-4">
       <div className="flex w-full flex-col justify-between">
         {/* CONTENT */}
-        <div>
+        <>
           {/* TITLE */}
           <h2 className="mb-2 text-center text-3xl font-bold">
-            Your Complete plan is ready, Alex.
+            Your Complete plan is ready, {name}.
           </h2>
 
-          <p className="mb-6 text-center font-medium text-base text-[#182737]">
-            Based on your metabolic profile and vacation goal, we’ve created a
+          <p className="mb-6 text-center text-base font-medium text-[#182737]">
+            Based on your metabolic profile and {goal === "GOAL_001" ? "fat loss" : goal === "GOAL_002" ? "muscle gain" : "health"} goal, we’ve created a
             trajectory just for you.
           </p>
 
-          {/* CHART CARD */}
-          <div className="mb-6 rounded-2xl bg-white p-4 shadow">
-            <div className="mb-2 flex items-center justify-between">
-              <p className="text-xs text-gray-500">WEIGHT PROJECTION</p>
-
-              <span className="rounded-full flex gap-1 bg-[#1E1E3A] px-3 py-1 text-[13px] text-white">
-                <Image src="/flag.svg" height={18} width={18} alt="flag"/>
-                VACATION  ZONE
-              </span>
+          {isHealthyGoal ? (
+            <div className="mb-8">
+               <MilestoneTimeline />
             </div>
+          ) : (
+            <>
+              {Gate === "fat_loss" ? (
+                <>
+                  {/* CHART CARD */}
+                  <div className="mb-6">
+                    {/* REAL CHART */}
+                    <div className="relative">
+                      <WeightGraph
+                        data={graphData}
+                        target="165 lb"
+                        variant="projection"
+                      />
+                    </div>
+                  </div>
 
-            <p className="mb-4  text-2xl font-bold">
-              Targeting <span className="font-semibold">170 lbs</span> by August
-            </p>
+                  {/* STATS */}
+                  <div className="mb-6 grid grid-cols-2 gap-3">
+                    <StatCard
+                      title="To Target"
+                      value="15"
+                      unit="lbs / week"
+                      highlight
+                      largeValue
+                    />
+                    <StatCardDate title="Goal Date" date="August 14, 2026" />
+                    <StatCard
+                      title="Weekly Rate"
+                      value="1.2"
+                      unit="lbs / week"
+                      largeValue
+                    />
+                    <StatCard
+                      title="Total Duration"
+                      value="12"
+                      unit="weeks"
+                      largeValue
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <MilestoneTimeline />
+                  {/* <div className="mb-6 grid grid-cols-2 gap-3"></div> */}
+                  <div className="mb-4 flex w-full max-w-xl gap-4">
+                    {milestoneData.map((item, index) => (
+                      <MilestoneCard
+                        key={index}
+                        title={item.title}
+                        weeks={item.weeks}
+                        description={item.description}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
 
-            {/* REAL CHART */}
-            <div className="relative">
-              <WeightProjectionChart />
-
-              {/* WEEK TAG */}
-              <div className="absolute top-10 right-2 rounded bg-[#007AFF] px-2 py-1 text-[10px] text-white">
-                WEEK 12
+              {/* INFO BOX */}
+              <div className="mb-6 rounded-xl border border-blue-300 bg-blue-50 p-4">
+                {Gate === "fat_loss" ? (
+                  <>
+                    <p className="text-xl font-semibold">
+                      15 lbs lighter by your{" "}
+                      <span className="font-semibold text-blue-600">Vacation</span>
+                      <br />
+                    </p>
+                    <span className="text-sm font-semibold text-[#12122275] italic">
+                      We calculated this based on your current activity levels.
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-xl font-semibold">
+                      TOTAL DURATION
+                      <br />
+                      <span className="font-semibold text-blue-600">12 WEEKS</span>
+                      <br />
+                    </p>
+                    <span className="text-sm font-semibold text-[#12122275] italic">
+                      Guided lifecycle
+                    </span>
+                  </>
+                )}
               </div>
-            </div>
 
-            {/* WEEK LABELS */}
-            <div className="mt-2 flex justify-between text-xs text-gray-400">
-              <span>Week 1</span>
-              <span>Week 4</span>
-              <span>Week 8</span>
-              <span className="text-black">Week 12</span>
-            </div>
-          </div>
+              {/* PROGRAM SUMMARY */}
+              <div>
+                <h3 className="mb-3 font-semibold">Program Summary</h3>
 
-          {/* STATS */}
-          <div className="mb-6 grid grid-cols-2 gap-3">
-            <StatCard
-              title="To Target"
-              value="15"
-              unit="lbs / week"
-              highlight
-              largeValue
-            />
-            <StatCardDate title="Goal Date" date="August 14, 2026" />
-            <StatCard
-              title="Weekly Rate"
-              value="1.2"
-              unit="lbs / week"
-              largeValue
-            />
-            <StatCard
-              title="Total Duration"
-              value="12"
-              unit="weeks"
-              largeValue
-            />
-          </div>
-
-          {/* INFO BOX */}
-          <div className="mb-6 rounded-xl border border-blue-300 bg-blue-50 p-4">
-            <p className="text-xl font-semibold">
-               15 lbs lighter by your{" "}
-              <span className="font-semibold text-blue-600">
-                Vacation
-              </span>
-              <br />
-              
-            </p>
-            <span className="text-[#12122275] font-semibold italic text-sm">
-              We calculated this based on your current activity levels.
-            </span>
-          </div>
-
-          {/* PROGRAM SUMMARY */}
-          <div>
-            <h3 className="mb-3 font-semibold">Program Summary</h3>
-
-            <ul className="grid grid-cols-1 gap-4 space-y-3 text-sm md:grid-cols-2">
-              <SummaryItem
-                label="Frequency"
-                value="4-day personalized"
-                img="/freq.png"
-              />
-              <SummaryItem
-                label="Setting"
-                value="Commercial Gym"
-                img="/setting.png"
-              />
-              <SummaryItem
-                label="Schedule"
-                value="Mon, Wed, Fri, Sat"
-                img="/time.png"
-              />
-              <SummaryItem
-                label="Session Duration"
-                value="45 min/session"
-                img="/duration.png"
-              />
-              <SummaryItem
-                label="Nutrition"
-                value="Mild calorie deficit + high protein"
-                img="/nutrition.png"
-              />
-              <SummaryItem
-                label="Coaching Style"
-                value="Balanced (guidance + flexibility)"
-                img="/coaching.png"
-              />
-            </ul>
-          </div>
-        </div>
-
-       
+                <ul className="grid grid-cols-1 gap-4 space-y-3 text-sm md:grid-cols-2">
+                  <SummaryItem
+                    label="Frequency"
+                    value="4-day personalized"
+                    img="/freq.png"
+                  />
+                  <SummaryItem
+                    label="Setting"
+                    value="Commercial Gym"
+                    img="/setting.png"
+                  />
+                  <SummaryItem
+                    label="Schedule"
+                    value="Mon, Wed, Fri, Sat"
+                    img="/time.png"
+                  />
+                  <SummaryItem
+                    label="Session Duration"
+                    value="45 min/session"
+                    img="/duration.png"
+                  />
+                  <SummaryItem
+                    label="Nutrition"
+                    value="Mild calorie deficit + high protein"
+                    img="/nutrition.png"
+                  />
+                  <SummaryItem
+                    label="Coaching Style"
+                    value="Balanced (guidance + flexibility)"
+                    img="/coaching.png"
+                  />
+                </ul>
+              </div>
+            </>
+          )}
+        </>
       </div>
 
-      {/* <WorkoutPreview/> */}
-
-       <div
-      className="flex items-center mt-4 justify-center bg-gray-900 "
-     
-    >
-      <div
-        className="relative w-full  rounded-2xl overflow-hidden"
-        style={{ background: "#111318", minHeight: 600, padding: "28px 20px 32px" }}
-      >
-        {/* Dark overlay */}
+      <div className="mt-4 flex items-center justify-center bg-gray-900">
         <div
-          className="absolute inset-0 z-0"
+          className="relative w-full overflow-hidden rounded-2xl"
           style={{
-            background:
-              "linear-gradient(to bottom right, rgba(30,35,50,0.92) 0%, rgba(15,18,28,0.97) 60%)",
+            background: "#000000C9",
+            minHeight: 600,
+            padding: "28px 20px 32px",
           }}
-        />
- 
-        <div className="relative z-10">
-          {/* Header */}
-          <div className="flex justify-between items-start mb-2.5">
-            <p className="italic text-[13px] text-gray-400 font-medium tracking-wider">
-              PREVIEW
-            </p>
-            <div className="flex items-center gap-1.5 bg-blue-500 text-white text-[13px] font-semibold rounded-full px-4 py-1.5">
-              <CalendarIcon />
-              Mon , May 12
-            </div>
-          </div>
- 
-          {/* Title */}
-          <div className="mb-7">
-            <p
-              className="text-white font-bold m-0 leading-none"
-              style={{
-              
-                fontSize: 50,
-                letterSpacing: "0.02em",
-              }}
-            >
-              DAY 1
-            </p>
-            <p
-              className="text-white font-semibold m-0 leading-none"
-              style={{
-                
-                fontSize: 36,
-                letterSpacing: "0.04em",
-              }}
-            >
-              FOUNDATION
-            </p>
-          </div>
- 
-          {/* Exercise List */}
-          <div className="flex flex-col gap-6">
-            {exercises.map((exercise, index) => (
-              <div key={exercise.name}>
-                <ExerciseCard {...exercise} />
-                {/* {index < exercises.length - 1 && <Connector />} */}
+        >
+          {/* Dark overlay */}
+          <div className="absolute inset-0 z-0" />
+
+          <div className="relative z-10">
+            {/* Header */}
+            <div className="mb-2.5 flex items-start justify-between">
+              <p className="text-[13px] font-medium tracking-wider text-gray-400 italic">
+                PREVIEW
+              </p>
+              <div className="flex items-center justify-center gap-1.5 rounded-full bg-blue-500 px-4 py-1.5 text-[13px] font-medium text-white">
+                <CalendarDays size={16} />
+                Mon , May 12
               </div>
-            ))}
+            </div>
+
+            {/* Title */}
+            <div className="mb-7">
+              <p
+                className="m-0 leading-none font-bold text-white"
+                style={{
+                  fontSize: 50,
+                  letterSpacing: "0.02em",
+                }}
+              >
+                DAY 1
+              </p>
+              <p
+                className="m-0 leading-none font-semibold text-white"
+                style={{
+                  fontSize: 36,
+                  letterSpacing: "0.04em",
+                }}
+              >
+                FOUNDATION
+              </p>
+            </div>
+
+            {/* Exercise List */}
+            <div className="flex flex-col gap-6">
+              {exercises.map((exercise, index) => (
+                <div key={exercise.name}>
+                  <ExerciseCard {...exercise} />
+                  {/* {index < exercises.length - 1 && <Connector />} */}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <div>
-      <TestimonialCard/>
-    </div>
+      <div>
+        <TestimonialCard />
+      </div>
 
-     {/* CTA */}
-        <Button 
-          onClick={handleStartPlan}
-          disabled={isSubmitting}
-          className="mt-6 w-full max-w-[400px] flex mx-auto justify-center items-center rounded-2xl bg-[#E9074B] py-6 text-lg text-white"
-        >
-          {isSubmitting && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-          Start My Plan
-        </Button>
+      {/* CTA */}
+      <Link href="/subscription">
+      <Button
+        // onClick={handleStartPlan}
+        // disabled={isSubmitting}
+        className="mx-auto mt-6 flex w-full max-w-[400px] items-center justify-center rounded-2xl bg-[#E9074B] py-6 text-lg text-white"
+      >
+        {/* {isSubmitting && <Loader2 className="mr-2 h-5 w-5 animate-spin" />} */}
+        Start My Plan
+      </Button>
+      </Link>
     </div>
   )
 }
 
 export default CompleteScreen
-
 
 const ExerciseCard = ({
   name,
@@ -380,33 +305,35 @@ const ExerciseCard = ({
   rest,
   image,
 }: {
-  name: string;
-  sets: number;
-  reps: number;
-  rest: string;
-  image: string;
+  name: string
+  sets: number
+  reps: number
+  rest: string
+  image: string
 }) => (
-  <div className="flex p-2 items-stretch bg-[rgba(30,35,50,0.85)] border border-blue-900/30 rounded-2xl overflow-hidden min-h-[110px]">
+  <div className="flex min-h-27.5 overflow-hidden rounded-2xl border border-[#868484] bg-[#00000066] p-2">
     <Image
-    height={100}
-    width={100}
+      height={100}
+      width={100}
       src={image}
       alt={name}
-      className="w-[150px] min-w-[140px] h-[130px] object-contain"
+      className="h-32.5 w-37.5 min-w-35 rounded-2xl object-cover"
     />
-    <div className="flex flex-col justify-center gap-2 px-4 py-3 flex-1">
-      <p className="text-white font-bold text-[18px] tracking-wide m-0">{name}</p>
-      <div className="flex items-center gap-1.5 text-[13px] text-gray-300 font-medium">
-        <DumbbellIcon />
+    <div className="flex flex-1 flex-col justify-center gap-2 px-4 py-3">
+      <p className="m-0 text-[18px] font-bold tracking-wide text-white">
+        {name}
+      </p>
+      <div className="flex items-center gap-1.5 text-[16px] font-medium text-gray-300">
+        <Dumbbell size={20} className="rotate-45" />
         {sets} sets &nbsp;×&nbsp; {reps} reps
       </div>
-      <div className="flex items-center gap-1.5 text-[13px] text-gray-300 font-medium">
-        <ClockIcon />
+      <div className="flex items-center gap-1.5 text-[16px] font-medium text-gray-300">
+        <Timer size={20} />
         {rest}
       </div>
     </div>
   </div>
-);
+)
 
 const StatCard = ({
   title,
@@ -423,7 +350,7 @@ const StatCard = ({
 }) => {
   return (
     <div
-      className={`flex h-[110px] flex-col border-[#E9074B] justify-between rounded-2xl border p-5  `}
+      className={`flex h-[110px] flex-col justify-between rounded-2xl border border-[#E9074B] p-5`}
     >
       <p className="text-[16px] font-bold tracking-wide text-[#121222] uppercase">
         {title}
@@ -477,5 +404,36 @@ const SummaryItem = ({
         <p className="font-medium">{value}</p>
       </div>
     </li>
+  )
+}
+
+const MilestoneCard = ({ title, weeks, description }: MilestoneCardProps) => {
+  return (
+    <div
+      className="flex-1 rounded-2xl bg-white p-5"
+      style={{ border: "1.5px solid #f43f7e" }}
+    >
+      {/* Card Title */}
+      <p
+        className="mb-3 tracking-wide text-gray-900 uppercase"
+        style={{ fontSize: 11, fontWeight: 700 }}
+      >
+        {title}
+      </p>
+
+      {/* Weeks number + label */}
+      <div className="mb-1 flex items-baseline gap-2">
+        <span
+          className="leading-none"
+          style={{ fontSize: 48, fontWeight: 700, color: "#E9074B" }}
+        >
+          {weeks}
+        </span>
+        <span className="text-base font-medium text-gray-900">Weeks</span>
+      </div>
+
+      {/* Description */}
+      <p className="mt-1 text-xs text-gray-400">{description}</p>
+    </div>
   )
 }
