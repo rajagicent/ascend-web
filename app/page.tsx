@@ -9,6 +9,8 @@ import crypto from "crypto";
 export default async function Page() {
   const cookieStore = await cookies();
   let uuid = cookieStore.get("survey_uuid")?.value;
+  const token = cookieStore.get("ascend_token")?.value;
+  const isEmailAuthenticatedInitial = !!token;
   let isNewUuid = false;
 
   console.log("uuid", uuid);
@@ -40,6 +42,7 @@ export default async function Page() {
       uuid={uuid} 
       initialResumeData={resumeRes.success ? resumeRes.data : null}
       isNewUuid={isNewUuid}
+      isEmailAuthenticatedInitial={isEmailAuthenticatedInitial}
     >
       <OnboardingFlow />
     </OnboardingProvider>

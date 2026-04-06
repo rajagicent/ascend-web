@@ -20,14 +20,13 @@ type Action =
 const getGeneratedFlow = (
   surveyData: SurveyAPIResponse,
   answers: Record<string, any>,
-  questionsMap: Record<string, SurveyQuestionData>
+  questionsMap: Record<string, SurveyQuestionData>,
+  isEmailAuthenticated: boolean = false
 ) => {
   const generatedFlow: string[] = [];
   
   // Dynamic Email Gate Skip: If user has a token, they've already submitted their email.
-  // We check the cookie directly to determine if this step should be part of the flow.
-  const isClient = typeof document !== "undefined";
-  const skipEmailGate = isClient && document.cookie.split("; ").some(row => row.trim().startsWith("ascend_token="));
+  const skipEmailGate = isEmailAuthenticated;
 
   surveyData.data.stages.forEach((stage) => {
     stage.questions.forEach((q) => {
@@ -131,7 +130,8 @@ const reducer = (state: State, action: Action): State => {
 // Reducer that takes surveyData and questionsMap in closure or payload
 const createReducer = (
   surveyData: SurveyAPIResponse, 
-  questionsMap: Record<string, SurveyQuestionData>
+  questionsMap: Record<string, SurveyQuestionData>,
+  isEmailAuthenticated: boolean
 ) => {
   return (state: State, action: Action): State => {
     switch (action.type) {
@@ -152,7 +152,7 @@ const createReducer = (
 
       case "NEXT": {
         // Compute flow using the absolute LATEST state.answers inside the reducer
-        const newFlow = getGeneratedFlow(surveyData, state.answers, questionsMap);
+        const newFlow = getGeneratedFlow(surveyData, state.answers, questionsMap, isEmailAuthenticated);
         const i = newFlow.indexOf(state.currentStep);
         if (i >= 0 && i < newFlow.length - 1) {
           return { ...state, currentStep: newFlow[i + 1] };
@@ -160,7 +160,7 @@ const createReducer = (
         return state;
       }
       case "PREV": {
-        const newFlow = getGeneratedFlow(surveyData, state.answers, questionsMap);
+        const newFlow = getGeneratedFlow(surveyData, state.answers, questionsMap, isEmailAuthenticated);
         const i = newFlow.indexOf(state.currentStep);
         if (i > 0) {
           return { ...state, currentStep: newFlow[i - 1] };
@@ -191,12 +191,14 @@ export const OnboardingProvider = ({
   uuid,
   initialResumeData,
   isNewUuid,
+  isEmailAuthenticatedInitial,
 }: {
   children: React.ReactNode;
   surveyData: SurveyAPIResponse;
   uuid: string;
   initialResumeData: any | null;
   isNewUuid: boolean;
+  isEmailAuthenticatedInitial?: boolean;
 }) => {
   const allQuestions = useMemo(() => {
     return surveyData.data.stages.flatMap((s) => s.questions);
@@ -214,8 +216,11 @@ export const OnboardingProvider = ({
     return map;
   }, [surveyData.data.stages]);
 
+  // Dynamic skip logic triggered by initial SSR status or client updates
+  const [isEmailAuthenticated, setIsEmailAuthenticated] = React.useState(isEmailAuthenticatedInitial || false);
+
   // Use the closure-aware reducer
-  const memoizedReducer = useMemo(() => createReducer(surveyData, questionsMap), [surveyData, questionsMap]);
+  const memoizedReducer = useMemo(() => createReducer(surveyData, questionsMap, isEmailAuthenticated), [surveyData, questionsMap, isEmailAuthenticated]);
 
   // Determine initial state based on SSR resume data
   // 🐛 FIX: initialResumeData is already the unwrapped 'res.data' object returned by redisApi.ts
@@ -249,6 +254,14 @@ export const OnboardingProvider = ({
     currentStep: initialStep,
     answers: initialAnswers,
   });
+
+  useEffect(() => {
+    // Check for cookie on client side as well to catch mid-survey updates
+    const token = typeof document !== "undefined" && document.cookie.split("; ").some(row => row.trim().startsWith("ascend_token="));
+    if (token) {
+      setIsEmailAuthenticated(true);
+    }
+  }, [state.answers.email]);
 
   // Client-side initialization
   useEffect(() => {
@@ -335,7 +348,7 @@ export const OnboardingProvider = ({
   }, [state.answers, state.currentStep]);
 
   // Expose the CURRENT flow to the UI (for progress bars, debugging, etc)
-  const flow = useMemo(() => getGeneratedFlow(surveyData, state.answers, questionsMap), [surveyData, state.answers, questionsMap]);
+  const flow = useMemo(() => getGeneratedFlow(surveyData, state.answers, questionsMap, isEmailAuthenticated), [surveyData, state.answers, questionsMap, isEmailAuthenticated]);
 
   const update = (key: string, value: any) => {
     dispatch({ type: "UPDATE", payload: { key, value } });
