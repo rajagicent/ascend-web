@@ -23,6 +23,11 @@ const getGeneratedFlow = (
   questionsMap: Record<string, SurveyQuestionData>
 ) => {
   const generatedFlow: string[] = [];
+  
+  // Dynamic Email Gate Skip: If user has a token, they've already submitted their email.
+  // We check the cookie directly to determine if this step should be part of the flow.
+  const isClient = typeof document !== "undefined";
+  const skipEmailGate = isClient && document.cookie.split("; ").some(row => row.trim().startsWith("ascend_token="));
 
   surveyData.data.stages.forEach((stage) => {
     stage.questions.forEach((q) => {
@@ -79,7 +84,14 @@ const getGeneratedFlow = (
 
   // We splice backwards so indices don't shift for earlier insertions
   filteredFlow.splice(i70, 0, "checkpoint");
-  filteredFlow.splice(i40, 0, "email_gate", "insight");
+  
+  if (!skipEmailGate) {
+    filteredFlow.splice(i40, 0, "email_gate", "insight");
+  } else {
+    // If skipping email gate, we still want the insight screen
+    filteredFlow.splice(i40, 0, "insight");
+  }
+  
   filteredFlow.push("complete");
 
   return filteredFlow;
@@ -117,7 +129,10 @@ const reducer = (state: State, action: Action): State => {
 };
 
 // Reducer that takes surveyData and questionsMap in closure or payload
-const createReducer = (surveyData: SurveyAPIResponse, questionsMap: Record<string, SurveyQuestionData>) => {
+const createReducer = (
+  surveyData: SurveyAPIResponse, 
+  questionsMap: Record<string, SurveyQuestionData>
+) => {
   return (state: State, action: Action): State => {
     switch (action.type) {
       case "SET_STEP":

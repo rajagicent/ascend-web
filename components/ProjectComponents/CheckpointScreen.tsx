@@ -24,6 +24,9 @@ export const CheckpointScreen = ({ next }: any) => {
   const currentWeight = Number(state.answers["weight"]) || 0
   const targetWeight = Number(state.answers["target_weight"]) || 0
   const weightDiff = Math.abs(currentWeight - targetWeight)
+  const upComingEvent = state.answers["event"]
+
+
 
   const graphData = [
     { name: "Now", value: currentWeight },
@@ -47,6 +50,16 @@ export const CheckpointScreen = ({ next }: any) => {
   const eventDate = eventData?.date ? new Date(eventData.date) : null
   const eventId = typeof eventData === "object" ? eventData.event : eventData
   const eventLabel = questionsMap["event"]?.options?.find((o: any) => o.value === eventId)?.label || "your goal"
+
+  // Dynamic days calculation
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diffInTime = eventDate ? eventDate.getTime() - today.getTime() : 30 * 24 * 60 * 60 * 1000;
+  // If event is today or in past, default to a minimum of 30 or similar logic? 
+  // For onboarding, we'll use the diff if it exists, otherwise 30.
+  const diffInDays = eventDate 
+    ? Math.max(1, Math.ceil(diffInTime / (1000 * 3600 * 24)))
+    : 30;
 
   const goalDateStr = eventDate 
     ? eventDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
@@ -121,7 +134,7 @@ export const CheckpointScreen = ({ next }: any) => {
 
               {/* Headline */}
               <p className="m-0 w-[304px] text-[26px] leading-8 font-bold text-[#181831]">
-                Your <span className="text-[#E9074B]">30 days</span> {goalText} plan
+                Your <span className="text-[#E9074B]">{diffInDays} days</span> {goalText} plan
                 is taking shape
               </p>
             </div>

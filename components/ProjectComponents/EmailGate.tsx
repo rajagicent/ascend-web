@@ -16,13 +16,6 @@ export const EmailGate = ({ next }: any) => {
 
   const [email, setEmail] = useState(state.answers["email"] || "")
 
-  useEffect(() => {
-    const token = Cookies.get("ascend_token");
-    if (token) {
-      next();
-    }
-  }, [next]);
-
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setEmail(val);
