@@ -1,13 +1,41 @@
 "use client";
 
 import { Eye, EyeClosed, EyeOff } from "lucide-react";
-import { useState } from "react";
+import { useState} from "react";
+import { createPassword } from "@/action/auth";
+import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
 const PasswordUpdate = () => {
   const [showPwd, setShowPwd] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleCreatePassword = async () => {
+    console.log("password", password);
+    
+    setLoading(true);
+    try {
+      const response = await createPassword({ password });
+      console.log("response", response);
+      
+      if (response.success) {
+        Cookies.set("onboarding_complete", "true", { expires: 1/24 }); // 1 hour
+        localStorage.removeItem("onboarding_data")
+        localStorage.removeItem("onboarding_step")
+        Cookies.remove("ascend_token");
+        Cookies.remove("survey_uuid")
+        router.push("/download");
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const isActive = password.length > 0 && confirm.length > 0;
 
@@ -67,6 +95,7 @@ const PasswordUpdate = () => {
 
         {/* Button */}
         <button
+        onClick={handleCreatePassword}
           disabled={!isActive}
           className={`w-full h-[48px]  rounded-[10px] flex items-center justify-center transition-all duration-200
           ${

@@ -8,4 +8,5 @@ export const ENDPOINT = {
     REDIS_GET_QUESTIONS : "/api/v1/redis/get-resume-survey-history",
     CHECK_USER_EMAIL: "/api/v1/users/get-user-email",
     FREE_TRIAL : "/api/v1/gateway/free-subscription",
+    CREATE_PASSWORD : "/api/v1/users/create-password",
 }

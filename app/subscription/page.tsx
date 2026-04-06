@@ -24,14 +24,14 @@ export default async function Page() {
   }
 
   // If no UUID, we'll generate one (fallback, though it should exist from onboarding)
-  if (!uuid) {
-     uuid = crypto.randomUUID();
-  }
+  // if (!uuid) {
+  //    uuid = crypto.randomUUID();
+  // }
 
   return (
     <OnboardingProvider 
       surveyData={surveyData} 
-      uuid={uuid} 
+      uuid={uuid!} 
       initialResumeData={resumeRes.success ? resumeRes.data : null}
       isNewUuid={false}
     >

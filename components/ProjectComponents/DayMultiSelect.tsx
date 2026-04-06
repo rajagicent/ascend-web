@@ -11,19 +11,41 @@ const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 const DayMultiSelect = ({
   question,
   value,
-  update,
   next,
 }: any) => {
-  const { state } = useOnboarding();
+  const { state, update } = useOnboarding();
   const { evaluateRules } = useSurveyRules();
   const [msg, setMsg] = useState<ValidationMessage | null>(null);
 
+  // Robustly extract frequency from either field_id "days" or physical question id "109"
+  const daysValue = state.answers["days"] || state.answers["109"];
+  const maxDays = (() => {
+    if (typeof daysValue === "string") {
+      const match = daysValue.match(/\d+/); // extracts "3" from "DAY_003" or "3 days/week"
+      return match ? parseInt(match[0]) : 0;
+    }
+    if (typeof daysValue === "number") return daysValue;
+    return 0;
+  })();
+
   const [selected, setSelected] = useState<string[]>(() => {
-    if (!value) return DAYS;
-    if (Array.isArray(value)) return value;
-    if (typeof value === "string") return value.split(", ").map(s => s.trim());
-    return DAYS;
+    if (value) {
+      if (Array.isArray(value)) return value;
+      if (typeof value === "string") return value.split(", ").map(s => s.trim());
+    }
+    return [];
   });
+
+  useEffect(() => {
+    // If no value exists and we have a maxDays limit, pre-select some days
+    if ((!value || (Array.isArray(selected) && selected.length === 0)) && maxDays > 0) {
+      console.log("Dynamically pre-selecting training days based on frequency:", maxDays);
+      const commonDays = ["Monday", "Wednesday", "Friday", "Tuesday", "Thursday", "Saturday", "Sunday"];
+      const initialSelection = commonDays.slice(0, maxDays);
+      setSelected(initialSelection);
+      update(question.field_id || question.id, initialSelection);
+    }
+  }, [maxDays, value]);
 
   useEffect(() => {
     const fieldId = question.field_id || question.id;
@@ -33,22 +55,37 @@ const DayMultiSelect = ({
   }, [selected]);
 
   const toggle = (day: string) => {
-    setSelected((prev) =>
-      prev.includes(day)
-        ? prev.filter((d) => d !== day)
-        : [...prev, day]
-    );
+    setSelected((prev) => {
+      if (prev.includes(day)) {
+        setMsg(null);
+        return prev.filter((d) => d !== day);
+      } else {
+        if (prev.length >= maxDays) {
+          setMsg({ text: `You can only select up to ${maxDays} training days based on your chosen frequency.`, type: "warning", color: "red" });
+          return prev;
+        }
+        setMsg(null);
+        return [...prev, day];
+      }
+    });
   };
 
   const handleContinue = () => {
-    if (selected.length === 0) return;
+    if (selected.length === 0) {
+      setMsg({ text: "Please select your training days.", type: "warning", color: "red" });
+      return;
+    }
+    if (selected.length !== maxDays) {
+      setMsg({ text: `Please select exactly ${maxDays} training days as per your chosen frequency.`, type: "warning", color: "red" });
+      return;
+    }
     update(question.field_id || question.id, selected);
     next();
   };
 
   const renderMessage = () => {
     if (!msg) return null;
-    
+
     let bgColor = "bg-blue-50";
     let iconColor = "text-blue-500";
     let borderColor = "border-blue-200";
@@ -111,7 +148,7 @@ const DayMultiSelect = ({
       </div>
 
       {/* Button */}
-      <button   onClick={handleContinue} className="mt-6 w-full max-w-100 cursor-pointer mx-auto flex items-center justify-center bg-[#E9074B] text-white py-3 rounded-xl font-semibold">
+      <button onClick={handleContinue} className="mt-6 w-full max-w-100 cursor-pointer mx-auto flex items-center justify-center bg-[#E9074B] text-white py-3 rounded-xl font-semibold">
         Continue
       </button>
     </div>

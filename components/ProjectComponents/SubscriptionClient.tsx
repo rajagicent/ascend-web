@@ -108,7 +108,7 @@ export default function SubscriptionClient() {
   return (
     <div className="relative w-full min-h-screen">
       {isSubmit && isAnswerSubmit && (
-        <CongratulationsPopup onSetPassword={() => router.push("/my-plan")} />
+        <CongratulationsPopup onSetPassword={() => router.push("/create-password")} />
       )}
       <Image
         src="/blurbg.png"
@@ -201,8 +201,7 @@ export default function SubscriptionClient() {
           onClick={handleFreeTrial}
           className="text-white py-2 mb-6 cursor-pointer rounded-md px-10 bg-[#E9074B]"
         >
-          {loading && <Loader2 className="animate-spin" />}
-          Start 3-Month Free Trial
+          {loading ? <Loader2 className="animate-spin" /> : "Start 3-Month Free Trial"}
         </button>
         <p className="text-white mb-4">Restore · Privacy · Terms</p>
       </div>

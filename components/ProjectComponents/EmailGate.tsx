@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
-import { useRef, useState } from "react"
+import { useRef, useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import Image from "next/image"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
@@ -15,6 +15,13 @@ export const EmailGate = ({ next }: any) => {
   const [loading, setLoading] = useState(false)
 
   const [email, setEmail] = useState(state.answers["email"] || "")
+
+  useEffect(() => {
+    const token = Cookies.get("ascend_token");
+    if (token) {
+      next();
+    }
+  }, [next]);
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;

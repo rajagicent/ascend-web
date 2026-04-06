@@ -76,3 +76,16 @@ export async function checkUserEmail(email: string): Promise<CheckUserEmailRespo
     return error;
   }
 }
+
+export async function createPassword(payload: {
+  password: string;
+}) {
+  try {
+    const response = await serverApi.post(ENDPOINT.CREATE_PASSWORD, payload, {
+      disableAuth: false,
+    });
+    return { success: true, data: response };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}

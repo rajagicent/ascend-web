@@ -99,14 +99,14 @@ export const EventQuestion = ({ question, value, update, next }: any) => {
 
       {selectedEvent && selectedEvent !== "EVENT_000" && (
         <>
-          <div className="mb-6 flex items-start justify-center gap-3 rounded-xl border border-blue-400 bg-blue-50 p-4 animate-in fade-in slide-in-from-top-2">
+          {/* <div className="mb-6 flex items-start justify-center gap-3 rounded-xl border border-blue-400 bg-blue-50 p-4 animate-in fade-in slide-in-from-top-2">
             <div className="mt-1 flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-xs text-white">
               ✓
             </div>
             <p className="text-sm text-gray-700">
               We’ll make sure you&apos;re ready by then. Pick your date below
             </p>
-          </div>
+          </div> */}
 
           {/* CALENDAR */}
           <div className="mx-auto max-w-xs mb-6 w-full rounded-xl bg-white p-4 shadow">
